@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.leva-wrapper {
+  position: fixed;
+  right: 10px;
+  top: 200px;
+}
+
+@media (max-width: 768px) {
+  .leva-wrapper {
+    top: 150px;
+    right: 5px;
+    transform: scale(0.9);
+  }
+}
+
+@layer base {
+  html, body, #root {
+    @apply h-full bg-gray-100 dark:bg-gray-950;
+  }
+}
