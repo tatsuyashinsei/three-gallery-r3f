@@ -12,6 +12,7 @@ import GalleryCanvas1_1 from "./pages/GalleryCanvas1_1";
 import GalleryCanvas2 from "./pages/GalleryCanvas2";
 import GalleryCanvas3 from "./pages/GalleryCanvas3";
 import GalleryCanvas4 from "./pages/GalleryCanvas4"; // ✅ 追加
+import GalleryCanvas3_1 from "./pages/GalleryCanvas3_1";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="/gallery/canvas2" element={<GalleryCanvas2 />} />
         <Route path="/gallery/canvas3" element={<GalleryCanvas3 />} />
         <Route path="/gallery/canvas4" element={<GalleryCanvas4 />} />
+        <Route path="/gallery/canvas3_1" element={<GalleryCanvas3_1 />} />
 
         {/* ✅ Notion 関連 */}
         <Route path="/columns/:id" element={<NotionArticleDetail />} />

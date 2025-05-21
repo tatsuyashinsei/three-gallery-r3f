@@ -1,5 +1,7 @@
 // GalleryPage.jsx
 
+// GalleryPage.jsx
+
 import { Link } from "react-router-dom";
 import CGGararyCanvas from "../components/CGGararyCanvas";
 
@@ -37,13 +39,13 @@ const GalleryPage = () => {
         </li>
 
         <li>
-          <Link to="/gallery/canvas4" className="flex items-center gap-6">
+          <Link to="/gallery/canvas3_1" className="flex items-center gap-6">
             <img
               src="https://res.cloudinary.com/dxcotqkhe/image/upload/v1747578900/Glico_wiy380.png"
               alt="星空"
               className="w-24 h-24 rounded-lg object-cover"
             />
-            <span>🔵 パノラマ（安定版）</span>
+            <span>🔵 パノラマ（R3F安定版）</span>
           </Link>
         </li>
 
@@ -54,7 +56,7 @@ const GalleryPage = () => {
               alt="星空"
               className="w-24 h-24 rounded-lg object-cover"
             />
-            <span>🔵 パノラマ（不安定版）</span>
+            <span>🔵 パノラマ（Three.js直書き）</span>
           </Link>
         </li>
       </ul>
@@ -63,3 +65,4 @@ const GalleryPage = () => {
 };
 
 export default GalleryPage;
+
