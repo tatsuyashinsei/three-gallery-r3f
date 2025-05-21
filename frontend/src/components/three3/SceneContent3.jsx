@@ -33,8 +33,17 @@ export default function SceneContent3() {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         const pmrem = new THREE.PMREMGenerator(gl);
         const envMap = pmrem.fromEquirectangular(texture).texture;
+
         scene.environment = envMap;
-        scene.background = envMap;
+        scene.background = texture;
+
+        // ★ ここで環境光の強度を抑える
+        scene.traverse((child) => {
+          if (child.material && "envMapIntensity" in child.material) {
+            child.material.envMapIntensity = 0.0; // 0.0〜1.0 が一般的
+          }
+        });
+
         texture.dispose();
         pmrem.dispose();
       },
