@@ -15,9 +15,15 @@ import Floor3 from "./Floor3";
 
 import useGuiStore from "../../store/useGuiStore";
 
-export default function SceneContent3() {
+export default function SceneContent3({ onSceneReady }) {
   const { beamVisible, environment, planeVisible } = useGuiStore();
   const { gl, scene } = useThree();
+
+  useEffect(() => {
+    if (onSceneReady && scene) {
+      onSceneReady(scene);
+    }
+  }, [onSceneReady, scene]);
 
   useEffect(() => {
     if (!environment) {
@@ -37,10 +43,9 @@ export default function SceneContent3() {
         scene.environment = envMap;
         scene.background = texture;
 
-        // ★ ここで環境光の強度を抑える
         scene.traverse((child) => {
           if (child.material && "envMapIntensity" in child.material) {
-            child.material.envMapIntensity = 0.0; // 0.0〜1.0 が一般的
+            child.material.envMapIntensity = 0.0;
           }
         });
 

@@ -1,3 +1,5 @@
+// src/store/useGuiStore.js
+
 import { create } from "zustand";
 
 const useGuiStore = create((set) => ({
@@ -8,6 +10,10 @@ const useGuiStore = create((set) => ({
   floor1TextureVisible: false,
   floor2TextureVisible: false,
   beamVisible: false,
+
+  // 🌐 HDR読み込み中状態
+  isLoadingHDR: false, // ← 追加
+  setLoadingHDR: (bool) => set({ isLoadingHDR: bool }), // ← 追加
 
   // 🎛 モデル設定
   model: {
@@ -57,6 +63,7 @@ const useGuiStore = create((set) => ({
       floor1TextureVisible: false,
       floor2TextureVisible: false,
       beamVisible: false,
+      isLoadingHDR: false, // ← 追加
       model: {
         scale: 5,
         posY: -2,
