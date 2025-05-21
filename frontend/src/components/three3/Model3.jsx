@@ -1,47 +1,26 @@
-// Model3.jsx
+// src/components/three3/Model3.jsx
 
-import { useEffect, useState } from "react";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { useThree } from "@react-three/fiber";
+import { useEffect, forwardRef } from "react";
+import { useGLTF } from "@react-three/drei";
 
-export default function Model3() {
-  const { scene: mainScene } = useThree();
-  const [model, setModel] = useState(null);
+// ✅ forwardRef を通すことで外部から参照可能に
+const Model3 = forwardRef((props, ref) => {
+  const { scene } = useGLTF(
+    "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb"
+  );
 
   useEffect(() => {
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(
-      "https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
-    );
+    scene.traverse((c) => {
+      c.castShadow = true;
+      c.receiveShadow = true;
+    });
 
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
+    scene.position.set(-140, -2, -38.9);
+    scene.rotation.y = Math.PI / 2.35;
+    scene.scale.setScalar(5);
+  }, [scene]);
 
-    loader.load(
-      "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb",
-      (gltf) => {
-        const scene = gltf.scene;
-        scene.traverse((c) => {
-          c.castShadow = c.receiveShadow = true;
-        });
-        scene.position.set(-140, -2, -38.9);
-        scene.rotation.y = Math.PI / 2.35;
-        scene.scale.setScalar(5);
+  return <primitive object={scene} ref={ref} />;
+});
 
-        mainScene.add(scene);
-        setModel(scene);
-      },
-      undefined,
-      (error) => {
-        console.error("GLTF load error:", error);
-      }
-    );
-
-    return () => {
-      if (model) mainScene.remove(model);
-    };
-  }, []);
-
-  return null;
-}
+export default Model3;

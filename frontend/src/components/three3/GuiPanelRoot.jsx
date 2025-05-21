@@ -6,28 +6,35 @@ import GuiPanel3 from "./GuiPanel3";
 import OtherSceneParts from "./otherSceneParts";
 import * as THREE from "three";
 
-import { loadHDR } from "@/lib/loadHDR";
-import useGuiStore from "@/store/useGuiStore"; // ✅ Zustandのストアをインポート
+import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment"; // ✅ JPG用に変更
+import useGuiStore from "@/store/useGuiStore";
 
-export default function GuiPanelRoot({ environmentTexture, createBeam }) {
+export default function GuiPanelRoot({ createBeam }) {
   const { scene, gl } = useThree();
-  const { setLoadingHDR } = useGuiStore(); // ✅ ZustandからSetterを取得
+  const { setLoadingHDR, setEnvironmentTexture } = useGuiStore();
 
-  const handleLoadHDR = async (url) => {
+  // ✅ ここで取得
+  const environmentTexture = useGuiStore((s) => s.environmentTexture);
+
+  const handleLoadJPG = async (url) => {
     try {
-      setLoadingHDR(true); // 開始
-      await loadHDR(url, scene, gl); // HDRロード
+      setLoadingHDR(true);
+      const texture = await loadJPGEnvironment(url);
+      console.log("🟡 [handleLoadJPG] 取得したテクスチャ:", texture);
+
+      // ✅ ここでストア更新
+      setEnvironmentTexture(texture);
     } catch (error) {
-      console.error("HDRの読み込みに失敗しました:", error);
+      console.error("JPGの環境マップ読み込み失敗:", error);
     } finally {
-      setLoadingHDR(false); // 終了
+      setLoadingHDR(false);
     }
   };
 
   const floor1 = useRef();
   const floor2 = useRef();
   const modelRef = useRef();
-  const particleSystem = useRef();
+  // const particleSystem = useRef();
   const dirLight = useRef();
   const ambientLight = useRef();
   const testLight = useRef();
@@ -50,7 +57,7 @@ export default function GuiPanelRoot({ environmentTexture, createBeam }) {
         floor1Ref={floor1}
         floor2Ref={floor2}
         modelRef={modelRef}
-        particleSystemRef={particleSystem}
+        // particleSystemRef={particleSystem}
         directionallightRef={dirLight}
         ambientLightRef={ambientLight}
         testLightRef={testLight}
@@ -64,15 +71,16 @@ export default function GuiPanelRoot({ environmentTexture, createBeam }) {
         environmentTexture={environmentTexture}
         yourLight={dirLight.current}
         yourAmbientLight={ambientLight.current}
-        particleSystem={particleSystem.current}
+        // particleSystem={particleSystem.current}
         modelRef={modelRef}
         greenBeam={greenBeam.current}
         orangeBeam={orangeBeam.current}
         createBeam={createBeam}
-        loadHDR={handleLoadHDR} // ✅ async/await + 状態管理付き
+        loadHDR={handleLoadJPG} // ✅ ここも変更
         testLight={testLight.current}
       />
     </>
   );
 }
+
 

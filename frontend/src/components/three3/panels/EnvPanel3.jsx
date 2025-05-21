@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import * as THREE from "three";
 import useGuiStore from "@/store/useGuiStore"; // ✅ Zustandのストア
 
+import { Stars } from "@react-three/drei";
+
+
 // 背景マップのURL一覧
 const envMapList = {
   選択してくださいーー:
@@ -57,35 +60,63 @@ export default function EnvPanel3({
     },
   });
 
+  // 環境マップの適用とライトの制御
   useEffect(() => {
     scene.environment = environment ? environmentTexture : null;
+
     if (directionallight) directionallight.visible = !environment;
     if (ambientLight) ambientLight.visible = !environment;
-  }, [environment]);
+  }, [environment, environmentTexture]);
 
+  // 背景とパーティクル表示の制御（パーティクル操作はここに集約）
   useEffect(() => {
-    scene.background = background ? environmentTexture : null;
-    if (particleSystem) {
-      particleSystem.visible = !background;
-      particleSystem.position.copy(camera.position);
-    }
-  }, [background]);
+    console.log("🔍 background:", background);
+    console.log("🔍 environmentTexture:", environmentTexture);
 
+    // 背景テクスチャを適用またはクリア
+    scene.background =
+      background && environmentTexture ? environmentTexture : null;
+
+    // パーティクル表示切り替え
+    if (particleSystem) {
+      const shouldShow = !background;
+
+      if (shouldShow) {
+        if (!scene.children.includes(particleSystem)) {
+          scene.add(particleSystem);
+          console.log("🟢 particleSystem added to scene");
+        }
+        particleSystem.position.copy(camera.position);
+      } else {
+        if (scene.children.includes(particleSystem)) {
+          scene.remove(particleSystem);
+          console.log("🔴 particleSystem removed from scene");
+        }
+      }
+    }
+  }, [background, environmentTexture]);
+
+  // 床の表示・テクスチャ制御
   useEffect(() => {
     if (floor1 && floor2) {
       floor1.visible = floor2.visible = planeVisible;
+
       floor1.material.map = floor1TextureVisible ? texture1 : null;
       floor2.material.map = floor2TextureVisible ? texture2 : null;
-      floor1.material.needsUpdate = floor2.material.needsUpdate = true;
+
+      floor1.material.needsUpdate = true;
+      floor2.material.needsUpdate = true;
     }
   }, [planeVisible, floor1TextureVisible, floor2TextureVisible]);
 
+  // ビームの生成制御
   useEffect(() => {
     if (greenBeam) greenBeam.dispose?.();
     if (orangeBeam) orangeBeam.dispose?.();
 
     if (beamVisible && modelRef) {
-      let conePos = new THREE.Vector3();
+      const conePos = new THREE.Vector3();
+
       modelRef.traverse((child) => {
         if (child.isMesh && child.name === "Cone_Color_0") {
           child.getWorldPosition(conePos);
@@ -97,12 +128,13 @@ export default function EnvPanel3({
     }
   }, [beamVisible]);
 
+  // 環境マップの読み込みトリガー
   useEffect(() => {
     const url = envMapList[envMap];
     if (url) loadHDR(url);
   }, [envMap]);
 
-  return (
+  return(
     <>
       {isLoadingHDR && (
         <Html center>
@@ -111,6 +143,19 @@ export default function EnvPanel3({
           </div>
         </Html>
       )}
+
+      {/* ✅ 背景がオフならスター表示 */}
+      {!background && (
+        <Stars
+          radius={100}
+          depth={50}
+          count={5000}
+          factor={4}
+          fade
+          speed={0.5}
+        />
+      )}
     </>
   );
+
 }

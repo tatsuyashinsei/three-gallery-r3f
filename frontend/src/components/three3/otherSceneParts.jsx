@@ -1,44 +1,46 @@
 // otherSceneParts.jsx
-import Model from "./Model3";
 
-export default function OtherSceneParts({
-  floor1Ref,
-  floor2Ref,
-  modelRef,
-  directionallightRef,
-  ambientLightRef,
-  testLightRef,
-  particleSystemRef,
-}) {
-  return (
-    <>
-      <mesh
-        ref={floor1Ref}
-        position={[0, 0, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <planeGeometry args={[5, 5]} />
-        <meshPhysicalMaterial />
-      </mesh>
+import { forwardRef, useEffect } from "react";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import { useThree } from "@react-three/fiber";
 
-      <mesh ref={floor2Ref} position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[5, 5]} />
-        <meshPhysicalMaterial />
-      </mesh>
+const Model = forwardRef((props, ref) => {
+  const { scene: mainScene } = useThree();
 
-      <Model ref={modelRef} />
+  useEffect(() => {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.6/");
 
-      <directionalLight
-        ref={directionallightRef}
-        position={[3, 5, 2]}
-        intensity={2}
-      />
-      <ambientLight ref={ambientLightRef} intensity={0.5} />
-      <pointLight ref={testLightRef} position={[0, 3, 0]} intensity={5} />
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
 
-      <group ref={particleSystemRef}>
-        {/* パーティクルなどがここに来る予定 */}
-      </group>
-    </>
-  );
-}
+    loader.load(
+      "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb",
+      (gltf) => {
+        const scene = gltf.scene;
+        scene.traverse((c) => {
+          c.castShadow = c.receiveShadow = true;
+        });
+        scene.position.set(-140, -2, -38.9);
+        scene.rotation.y = Math.PI / 2.35;
+        scene.scale.setScalar(5);
+
+        if (ref?.current) {
+          ref.current.add(scene);
+        } else {
+          mainScene.add(scene);
+        }
+      },
+      undefined,
+      (error) => {
+        console.error("GLTF load error:", error);
+      }
+    );
+  }, []);
+
+  return null;
+});
+
+export default Model;
+

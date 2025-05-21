@@ -6,6 +6,11 @@ const useGuiStore = create((set) => ({
   // 🌍 環境・表示設定
   environment: true,
   background: true,
+  environmentTexture: null, // ✅ ステートとして持つ
+  setEnvironmentTexture: (tex) => {
+    console.log("🟢 [Zustand] setEnvironmentTexture 実行", tex);
+    set({ environmentTexture: tex });
+  },
   planeVisible: false,
   floor1TextureVisible: false,
   floor2TextureVisible: false,
@@ -13,6 +18,7 @@ const useGuiStore = create((set) => ({
 
   // 🌐 HDR読み込み中状態
   isLoadingHDR: false, // ← 追加
+  setEnvironmentTexture: (tex) => set({ environmentTexture: tex }), // ✅ これが必要！
   setLoadingHDR: (bool) => set({ isLoadingHDR: bool }), // ← 追加
 
   // 🎛 モデル設定
@@ -63,6 +69,9 @@ const useGuiStore = create((set) => ({
       floor1TextureVisible: false,
       floor2TextureVisible: false,
       beamVisible: false,
+      // 🌐 テクスチャ状態
+      environmentTexture: null, // ✅ 追加
+      setEnvironmentTexture: (tex) => set({ environmentTexture: tex }), // ✅ 追加
       isLoadingHDR: false, // ← 追加
       model: {
         scale: 5,
