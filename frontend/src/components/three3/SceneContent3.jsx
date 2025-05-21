@@ -16,7 +16,8 @@ import Floor3 from "./Floor3";
 import useGuiStore from "../../store/useGuiStore";
 
 export default function SceneContent3({ onSceneReady }) {
-  const { beamVisible, environment, planeVisible } = useGuiStore();
+  const { beamVisible, environment, planeVisible, particleVisible } =
+    useGuiStore();
   const { gl, scene } = useThree();
 
   useEffect(() => {

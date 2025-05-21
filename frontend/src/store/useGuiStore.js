@@ -12,6 +12,7 @@ const useGuiStore = create((set) => ({
     set({ environmentTexture: tex });
   },
   planeVisible: false,
+  particleVisible: false, // ← 最初から false にしておけば表示されない
   floor1TextureVisible: false,
   floor2TextureVisible: false,
   beamVisible: false,
