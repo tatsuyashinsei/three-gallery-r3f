@@ -11,6 +11,3 @@ const GalleryPage1 = () => {
 };
 
 export default GalleryPage1;
-
-// for git message test 
-
