@@ -1,26 +1,33 @@
 // src/components/three3/Model3.jsx
 
-import { useEffect, forwardRef } from "react";
 import { useGLTF } from "@react-three/drei";
+import { useEffect } from "react";
 
-// ✅ forwardRef を通すことで外部から参照可能に
-const Model3 = forwardRef((props, ref) => {
+export default function Model3({ visible = true, modelRef }) {
   const { scene } = useGLTF(
     "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb"
   );
 
   useEffect(() => {
-    scene.traverse((c) => {
-      c.castShadow = true;
-      c.receiveShadow = true;
+    scene.traverse((child) => {
+      child.castShadow = true;
+      child.receiveShadow = true;
     });
 
-    scene.position.set(-140, -2, -38.9);
-    scene.rotation.y = Math.PI / 2.35;
-    scene.scale.setScalar(5);
-  }, [scene]);
+    // 外部参照用に登録
+    if (modelRef?.current) {
+      modelRef.current = scene;
+    }
+  }, [scene, modelRef]);
 
-  return <primitive object={scene} ref={ref} />;
-});
+  if (!visible) return null; // ✅ オンオフ切り替えに対応
 
-export default Model3;
+  return (
+    <primitive
+      object={scene}
+      position={[-140, -2, -38.9]}
+      rotation={[0, Math.PI / 2.35, 0]}
+      scale={5}
+    />
+  );
+}

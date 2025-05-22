@@ -1,46 +1,28 @@
-// GuiPanelRoot.jsx
+// src/components/three3/GuiPanelRoot.jsx
 
-import { useRef, useMemo } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { useThree } from "@react-three/fiber";
-import GuiPanel3 from "./GuiPanel3";
-import OtherSceneParts from "./otherSceneParts";
 import * as THREE from "three";
 
-import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment"; // ✅ JPG用に変更
-import useGuiStore from "@/store/useGuiStore";
+import Model3 from "./Model3";
+import Floor3 from "./Floor3";
+import GuiPanel3 from "./GuiPanel3";
+import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
 export default function GuiPanelRoot({ createBeam }) {
-  const { scene, gl } = useThree();
-  const { setLoadingHDR, setEnvironmentTexture } = useGuiStore();
+  const { setEnvironmentTexture } = useThree(); // 今は未使用だが保持
+  const [environmentTexture, setEnvTexture] = useState(null);
 
-  // ✅ ここで取得
-  const environmentTexture = useGuiStore((s) => s.environmentTexture);
-
-  const handleLoadJPG = async (url) => {
-    try {
-      setLoadingHDR(true);
-      const texture = await loadJPGEnvironment(url);
-      console.log("🟡 [handleLoadJPG] 取得したテクスチャ:", texture);
-
-      // ✅ ここでストア更新
-      setEnvironmentTexture(texture);
-    } catch (error) {
-      console.error("JPGの環境マップ読み込み失敗:", error);
-    } finally {
-      setLoadingHDR(false);
-    }
-  };
+  // ✅ ローカル状態で制御（Zustandではなく useState）
+  const [modelVisible, setModelVisible] = useState(true);
+  const [floorVisible, setFloorVisible] = useState(true);
 
   const floor1 = useRef();
   const floor2 = useRef();
   const modelRef = useRef();
-  // const particleSystem = useRef();
   const dirLight = useRef();
   const ambientLight = useRef();
   const testLight = useRef();
-
-  const greenBeam = useRef();
-  const orangeBeam = useRef();
 
   const texture1 = useMemo(
     () => new THREE.TextureLoader().load("/tex1.jpg"),
@@ -51,17 +33,22 @@ export default function GuiPanelRoot({ createBeam }) {
     []
   );
 
+  const handleLoadJPG = async (url) => {
+    try {
+      const texture = await loadJPGEnvironment(url);
+      setEnvTexture(texture);
+    } catch (err) {
+      console.error("環境マップの読み込み失敗:", err);
+    }
+  };
+
   return (
     <>
-      <OtherSceneParts
-        floor1Ref={floor1}
-        floor2Ref={floor2}
-        modelRef={modelRef}
-        // particleSystemRef={particleSystem}
-        directionallightRef={dirLight}
-        ambientLightRef={ambientLight}
-        testLightRef={testLight}
-      />
+      <Suspense fallback={null}>
+        {/* ✅ 表示制御付き */}
+        <Model3 visible={modelVisible} modelRef={modelRef} />
+        <Floor3 visible={floorVisible} floor1Ref={floor1} floor2Ref={floor2} />
+      </Suspense>
 
       <GuiPanel3
         floor1={floor1.current}
@@ -69,18 +56,16 @@ export default function GuiPanelRoot({ createBeam }) {
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}
-        yourLight={dirLight.current}
-        yourAmbientLight={ambientLight.current}
-        // particleSystem={particleSystem.current}
         modelRef={modelRef}
-        greenBeam={greenBeam.current}
-        orangeBeam={orangeBeam.current}
         createBeam={createBeam}
-        loadHDR={handleLoadJPG} // ✅ ここも変更
+        loadHDR={handleLoadJPG}
         testLight={testLight.current}
+        // ✅ トグル制御用の props
+        modelVisible={modelVisible}
+        setModelVisible={setModelVisible}
+        floorVisible={floorVisible}
+        setFloorVisible={setFloorVisible}
       />
     </>
   );
 }
-
-

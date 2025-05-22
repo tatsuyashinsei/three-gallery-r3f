@@ -1,8 +1,10 @@
-// GuiPanel3.jsx
+// src/components/three3/GuiPanel3.jsx
 
 import EnvPanel3 from "./panels/EnvPanel3";
 import ModelPanel3 from "./panels/ModelPanel3";
 import MaterialPanel3 from "./panels/MaterialPanel3";
+
+import { useControls } from "leva";
 
 export default function GuiPanel3({
   floor1,
@@ -10,18 +12,28 @@ export default function GuiPanel3({
   texture1,
   texture2,
   environmentTexture,
-  directionallight,
-  ambientLight,
-  particleSystem,
   modelRef,
-  greenBeam,
-  orangeBeam,
   createBeam,
   loadHDR,
   testLight,
+
+  // ✅ 状態と更新関数（props経由で渡されたもの）
+  modelVisible,
+  setModelVisible,
+  floorVisible,
+  setFloorVisible,
 }) {
-  // ✅ ここで確認ログ
-  console.log("✅ GuiPanel3 - loadHDR type:", typeof loadHDR);
+  // ✅ Levaにトグルスイッチを登録（useStateベース）
+  useControls("表示切替", {
+    "Floor 表示": {
+      value: floorVisible,
+      onChange: (val) => setFloorVisible(val),
+    },
+    "Model 表示": {
+      value: modelVisible,
+      onChange: (val) => setModelVisible(val),
+    },
+  });
 
   return (
     <>
@@ -31,12 +43,7 @@ export default function GuiPanel3({
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}
-        directionallight={directionallight}
-        ambientLight={ambientLight}
-        particleSystem={particleSystem}
         modelRef={modelRef}
-        greenBeam={greenBeam}
-        orangeBeam={orangeBeam}
         createBeam={createBeam}
         loadHDR={loadHDR}
       />
