@@ -1,5 +1,3 @@
-// src/components/three3/panels/EnvPanel3.jsx
-
 import { useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { Html, Stars } from "@react-three/drei";
@@ -27,7 +25,7 @@ export default function EnvPanel3({
   environmentTexture,
   directionallight,
   ambientLight,
-  particleSystem, // ※未使用化または今後JSXでの置換を推奨
+  particleSystem, // 未使用
   modelRef,
   greenBeam,
   orangeBeam,
@@ -40,7 +38,6 @@ export default function EnvPanel3({
   const {
     environment,
     background,
-    planeVisible,
     floor1TextureVisible,
     floor2TextureVisible,
     beamVisible,
@@ -48,7 +45,6 @@ export default function EnvPanel3({
   } = useControls("環境設定", {
     environment: true,
     background: true,
-    planeVisible: false,
     floor1TextureVisible: false,
     floor2TextureVisible: false,
     beamVisible: false,
@@ -59,33 +55,49 @@ export default function EnvPanel3({
     },
   });
 
-  // 環境テクスチャ & ライト制御
+  // 環境マップとライト切り替え
   useEffect(() => {
     scene.environment = environment ? environmentTexture : null;
     if (directionallight) directionallight.visible = !environment;
     if (ambientLight) ambientLight.visible = !environment;
   }, [environment, environmentTexture]);
 
-  // 背景表示制御
+  // 背景表示の制御
   useEffect(() => {
     scene.background =
       background && environmentTexture ? environmentTexture : null;
   }, [background, environmentTexture]);
 
-  // 床のテクスチャと表示制御
+  // 床のテクスチャ制御
   useEffect(() => {
-    if (floor1 && floor2) {
-      floor1.visible = floor2.visible = planeVisible;
 
-      floor1.material.map = floor1TextureVisible ? texture1 : null;
-      floor2.material.map = floor2TextureVisible ? texture2 : null;
+    console.log("floor1:", floor1);
+    console.log("floor2:", floor2);
+    console.log("floor1.material:", floor1?.material);
+    console.log("floor2.material:", floor2?.material);
+    
+    const mesh1 = floor1?.current;
+    const mesh2 = floor2?.current;
 
-      floor1.material.needsUpdate = true;
-      floor2.material.needsUpdate = true;
+    if (mesh1?.material) {
+      mesh1.material.map = floor1TextureVisible ? texture1 : null;
+      mesh1.material.needsUpdate = true;
     }
-  }, [planeVisible, floor1TextureVisible, floor2TextureVisible]);
 
-  // ビームの生成制御（Coneからのワールド位置取得）
+    if (mesh2?.material) {
+      mesh2.material.map = floor2TextureVisible ? texture2 : null;
+      mesh2.material.needsUpdate = true;
+    }
+  }, [
+    floor1,
+    floor2,
+    texture1,
+    texture2,
+    floor1TextureVisible,
+    floor2TextureVisible,
+  ]);
+
+  // ビーム生成処理
   useEffect(() => {
     greenBeam?.dispose?.();
     orangeBeam?.dispose?.();
@@ -104,7 +116,7 @@ export default function EnvPanel3({
     }
   }, [beamVisible]);
 
-  // HDRIマップの読み込み
+  // HDR 読み込みトリガー
   useEffect(() => {
     const url = envMapList[envMap];
     if (url) loadHDR(url);
@@ -115,7 +127,7 @@ export default function EnvPanel3({
       {isLoadingHDR && (
         <Html center>
           <div style={{ color: "white", fontSize: "1.2rem" }}>
-            ⏳ 環境マップを読み込み中...
+            
           </div>
         </Html>
       )}

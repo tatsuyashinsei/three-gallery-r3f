@@ -11,13 +11,15 @@ import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
 export default function GuiPanelRoot({ createBeam }) {
   const [environmentTexture, setEnvTexture] = useState(null);
+
+  // 表示制御
   const [modelVisible, setModelVisible] = useState(true);
   const [floorVisible, setFloorVisible] = useState(true);
+  const [floor1TextureVisible, setFloor1TextureVisible] = useState(false);
+  const [floor2TextureVisible, setFloor2TextureVisible] = useState(false);
 
-  const floor1 = useRef();
-  const floor2 = useRef();
   const modelRef = useRef();
-  const testLight = useRef(); // 将来使う予定なら残す
+  const testLight = useRef();
 
   const texture1 = useMemo(
     () => new THREE.TextureLoader().load("/tex1.jpg"),
@@ -41,12 +43,16 @@ export default function GuiPanelRoot({ createBeam }) {
     <>
       <Suspense fallback={null}>
         <Model3 visible={modelVisible} modelRef={modelRef} />
-        <Floor3 visible={floorVisible} floor1Ref={floor1} floor2Ref={floor2} />
+        <Floor3
+          visible={floorVisible}
+          textureVisible1={floor1TextureVisible}
+          textureVisible2={floor2TextureVisible}
+        />
       </Suspense>
 
       <GuiPanel3
-        floor1={floor1.current}
-        floor2={floor2.current}
+        floor1={null} // もう未使用
+        floor2={null} // 同上
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}
@@ -58,6 +64,10 @@ export default function GuiPanelRoot({ createBeam }) {
         setModelVisible={setModelVisible}
         floorVisible={floorVisible}
         setFloorVisible={setFloorVisible}
+        floor1TextureVisible={floor1TextureVisible}
+        setFloor1TextureVisible={setFloor1TextureVisible}
+        floor2TextureVisible={floor2TextureVisible}
+        setFloor2TextureVisible={setFloor2TextureVisible}
       />
     </>
   );
