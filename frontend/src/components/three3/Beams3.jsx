@@ -1,50 +1,53 @@
 // Beams3.jsx
-
-import { useEffect, useRef } from "react";
-import { useThree } from "@react-three/fiber";
-import useGuiStore from "@/store/useGuiStore"; // ✅ 修正済み
+import { useMemo } from "react";
+import useGuiStore from "@/store/useGuiStore";
 import * as THREE from "three";
 
 export default function Beams3({ position = [0, 0, 0] }) {
-  const { scene } = useThree();
   const { beamVisible } = useGuiStore();
-  const beams = useRef([]);
 
-  useEffect(() => {
-    if (!beamVisible) {
-      beams.current.forEach((b) => scene.remove(b));
-      beams.current = [];
-      return;
-    }
-
-    beams.current.forEach((b) => scene.remove(b));
-    beams.current = [];
-
-    const createBeam = (color, yOffset = 0) => {
-      const geo = new THREE.CylinderGeometry(0.1, 0.3, 30, 8, 1, true);
-      const mat = new THREE.MeshBasicMaterial({
-        color,
+  // ✅ Cylinder geometry & material をメモ化（最適化）
+  const limeMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: "lime",
         transparent: true,
         opacity: 0.6,
         side: THREE.DoubleSide,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(position[0], position[1] + yOffset, position[2]);
-      mesh.rotation.x = Math.PI / 2;
-      scene.add(mesh);
-      beams.current.push(mesh);
-    };
+      }),
+    []
+  );
 
-    createBeam("lime", 0);
-    createBeam("orange", 0.5);
+  const orangeMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: "orange",
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
 
-    return () => {
-      beams.current.forEach((b) => scene.remove(b));
-      beams.current = [];
-    };
-  }, [beamVisible, position, scene]);
+  const geometry = useMemo(
+    () => new THREE.CylinderGeometry(0.1, 0.3, 30, 8, 1, true),
+    []
+  );
 
-  return null;
+  return (
+    <group visible={beamVisible}>
+      <mesh
+        geometry={geometry}
+        material={limeMaterial}
+        position={[position[0], position[1], position[2]]}
+        rotation={[Math.PI / 2, 0, 0]}
+      />
+      <mesh
+        geometry={geometry}
+        material={orangeMaterial}
+        position={[position[0], position[1] + 0.5, position[2]]}
+        rotation={[Math.PI / 2, 0, 0]}
+      />
+    </group>
+  );
 }
-
-

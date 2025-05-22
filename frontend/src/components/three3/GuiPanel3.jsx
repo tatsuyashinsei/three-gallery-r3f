@@ -27,13 +27,17 @@ export default function GuiPanel3({
   useControls("表示切替", {
     "Floor 表示": {
       value: floorVisible,
-      onChange: (val) => setFloorVisible(val),
+      onChange: (val) => {
+        console.log("Floor visible:", val);
+        setFloorVisible(val);
+      },
     },
     "Model 表示": {
       value: modelVisible,
       onChange: (val) => setModelVisible(val),
     },
   });
+
 
   return (
     <>
