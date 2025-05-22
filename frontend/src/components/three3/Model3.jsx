@@ -2,6 +2,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 const MODEL_URL =
   "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb";
@@ -11,16 +12,26 @@ export default function Model3({ visible = true, modelRef }) {
   const groupRef = useRef();
 
   useEffect(() => {
-    // モデル内の影設定
     scene.traverse((child) => {
-      child.castShadow = true;
-      child.receiveShadow = true;
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        // 🌟 "Cone_Color_0" だけマテリアル強調
+        if (child.name === "Cone_Color_0") {
+          const mat = child.material;
+          mat.envMapIntensity = 2.5;
+          mat.clearcoat = 0.8;
+          mat.roughness = 0.1;
+          mat.metalness = 0.7;
+          mat.emissive = new THREE.Color(0xffffff);
+          mat.emissiveIntensity = 0.3;
+          mat.needsUpdate = true;
+        }
+      }
     });
 
-    // 外部からアクセスできるように ref に登録
-    if (modelRef?.current !== undefined) {
-      modelRef.current = groupRef.current;
-    }
+    if (modelRef) modelRef.current = groupRef.current;
   }, [scene, modelRef]);
 
   return (
@@ -35,4 +46,3 @@ export default function Model3({ visible = true, modelRef }) {
     </group>
   );
 }
-
