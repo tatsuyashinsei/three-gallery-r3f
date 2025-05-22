@@ -1,3 +1,7 @@
+// src/components/three3/panels/EnvPanel3.jsx
+
+//------------------------------------Faze 1
+
 import { useThree } from "@react-three/fiber";
 import { useControls } from "leva";
 import { Html, Stars } from "@react-three/drei";
@@ -55,6 +59,8 @@ export default function EnvPanel3({
     },
   });
 
+  //------------------------------------Faze 2
+
   // 環境マップとライト切り替え
   useEffect(() => {
     scene.environment = environment ? environmentTexture : null;
@@ -70,12 +76,11 @@ export default function EnvPanel3({
 
   // 床のテクスチャ制御
   useEffect(() => {
-
     console.log("floor1:", floor1);
     console.log("floor2:", floor2);
     console.log("floor1.material:", floor1?.material);
     console.log("floor2.material:", floor2?.material);
-    
+
     const mesh1 = floor1?.current;
     const mesh2 = floor2?.current;
 
@@ -96,6 +101,8 @@ export default function EnvPanel3({
     floor1TextureVisible,
     floor2TextureVisible,
   ]);
+
+  //------------------------------------Faze 3
 
   // ビーム生成処理
   useEffect(() => {
@@ -126,9 +133,7 @@ export default function EnvPanel3({
     <>
       {isLoadingHDR && (
         <Html center>
-          <div style={{ color: "white", fontSize: "1.2rem" }}>
-            
-          </div>
+          <div style={{ color: "white", fontSize: "1.2rem" }}></div>
         </Html>
       )}
 
