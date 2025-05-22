@@ -1,20 +1,36 @@
 // Controls3.jsx
 
-import { useEffect } from "react";
+
+// ※不要ファイル？
+
+
+import { useEffect, useRef } from "react";
 import { Pane } from "tweakpane";
 import { useGuiStore } from "@/store/useGuiStore";
-// import { useGuiStore } from "../../store/useGuiStore";
 
-export default function GuiPanel3() {
-  const { beamVisible, toggleBeam } = useGuiStore();
+export default function Controls3() {
+  const { beamVisible, setBeamVisible } = useGuiStore();
+  const paneRef = useRef(null);
 
   useEffect(() => {
+    // Pane のインスタンスは1つだけ作成
+    if (paneRef.current) return;
     const pane = new Pane({ title: "GUI", expanded: false });
-    pane
-      .addInput({ beamVisible }, "beamVisible", { label: "Beam" })
-      .on("change", () => toggleBeam());
-    return () => pane.dispose();
-  }, [beamVisible, toggleBeam]);
+    paneRef.current = pane;
+
+    const params = { beamVisible };
+
+    const input = pane.addInput(params, "beamVisible", { label: "Beam" });
+
+    input.on("change", (ev) => {
+      setBeamVisible(ev.value);
+    });
+
+    return () => {
+      pane.dispose();
+      paneRef.current = null;
+    };
+  }, []);
 
   return null;
 }

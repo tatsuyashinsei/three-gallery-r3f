@@ -1,53 +1,52 @@
 // Beams3.jsx
+
 import { useMemo } from "react";
-import useGuiStore from "@/store/useGuiStore";
 import * as THREE from "three";
+import useGuiStore from "@/store/useGuiStore";
 
-export default function Beams3({ position = [0, 0, 0] }) {
-  const { beamVisible } = useGuiStore();
+export default function Beams3({ position = [0, 0, 0], visible }) {
+  const storeVisible = useGuiStore((state) => state.beamVisible);
+  const isVisible = visible ?? storeVisible; // ✅ props優先（外部から制御も可能に）
 
-  // ✅ Cylinder geometry & material をメモ化（最適化）
-  const limeMaterial = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "lime",
-        transparent: true,
-        opacity: 0.6,
-        side: THREE.DoubleSide,
-      }),
-    []
-  );
+  const geometry = useMemo(() => {
+    return new THREE.CylinderGeometry(0.1, 0.3, 30, 8, 1, true);
+  }, []);
 
-  const orangeMaterial = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: "orange",
-        transparent: true,
-        opacity: 0.6,
-        side: THREE.DoubleSide,
-      }),
-    []
-  );
+  const limeMaterial = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: "lime",
+      transparent: true,
+      opacity: 0.6,
+      side: THREE.DoubleSide,
+    });
+  }, []);
 
-  const geometry = useMemo(
-    () => new THREE.CylinderGeometry(0.1, 0.3, 30, 8, 1, true),
-    []
-  );
+  const orangeMaterial = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: "orange",
+      transparent: true,
+      opacity: 0.6,
+      side: THREE.DoubleSide,
+    });
+  }, []);
+
+  const [x, y, z] = position;
 
   return (
-    <group visible={beamVisible}>
+    <group visible={isVisible}>
       <mesh
         geometry={geometry}
         material={limeMaterial}
-        position={[position[0], position[1], position[2]]}
+        position={[x, y, z]}
         rotation={[Math.PI / 2, 0, 0]}
       />
       <mesh
         geometry={geometry}
         material={orangeMaterial}
-        position={[position[0], position[1] + 0.5, position[2]]}
+        position={[x, y + 0.5, z]}
         rotation={[Math.PI / 2, 0, 0]}
       />
     </group>
   );
 }
+

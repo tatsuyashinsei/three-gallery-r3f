@@ -1,10 +1,9 @@
 // src/components/three3/GuiPanel3.jsx
 
-import EnvPanel3 from "./panels/EnvPanel3";
-import ModelPanel3 from "./panels/ModelPanel3";
-import MaterialPanel3 from "./panels/MaterialPanel3";
-
-import { useControls } from "leva";
+import EnvPanel3 from "./panels/EnvPanel3"
+import ModelPanel3 from "./panels/ModelPanel3"
+import MaterialPanel3 from "./panels/MaterialPanel3"
+import { useControls } from "leva"
 
 export default function GuiPanel3({
   floor1,
@@ -16,31 +15,26 @@ export default function GuiPanel3({
   createBeam,
   loadHDR,
   testLight,
-
-  // ✅ 状態と更新関数（props経由で渡されたもの）
   modelVisible,
   setModelVisible,
   floorVisible,
   setFloorVisible,
 }) {
-  // ✅ Levaにトグルスイッチを登録（useStateベース）
+  // ✅ LevaでまとめてトグルUIを管理
   useControls("表示切替", {
     "Floor 表示": {
       value: floorVisible,
-      onChange: (val) => {
-        console.log("Floor visible:", val);
-        setFloorVisible(val);
-      },
+      onChange: setFloorVisible,
     },
     "Model 表示": {
       value: modelVisible,
-      onChange: (val) => setModelVisible(val),
+      onChange: setModelVisible,
     },
-  });
-
+  })
 
   return (
     <>
+      {/* 各種パネルをまとめてUIとして構成 */}
       <EnvPanel3
         floor1={floor1}
         floor2={floor2}
@@ -54,5 +48,6 @@ export default function GuiPanel3({
       <ModelPanel3 modelRef={modelRef} testLight={testLight} />
       <MaterialPanel3 floor1={floor1} floor2={floor2} />
     </>
-  );
+  )
 }
+

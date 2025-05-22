@@ -1,14 +1,13 @@
+// src/components/three3/panels/EnvPanel3.jsx
+
 import { useThree } from "@react-three/fiber";
 import { useControls } from "leva";
-import { Html } from "@react-three/drei";
+import { Html, Stars } from "@react-three/drei";
 import { useEffect } from "react";
 import * as THREE from "three";
-import useGuiStore from "@/store/useGuiStore"; // ✅ Zustandのストア
+import useGuiStore from "@/store/useGuiStore";
 
-import { Stars } from "@react-three/drei";
-
-
-// 背景マップのURL一覧
+// HDRI 背景の選択肢一覧
 const envMapList = {
   選択してくださいーー:
     "https://cdn.jsdelivr.net/gh/threejsconf/hdr@main/ShinseiIriguchiMae_small.jpg",
@@ -28,7 +27,7 @@ export default function EnvPanel3({
   environmentTexture,
   directionallight,
   ambientLight,
-  particleSystem,
+  particleSystem, // ※未使用化または今後JSXでの置換を推奨
   modelRef,
   greenBeam,
   orangeBeam,
@@ -36,7 +35,7 @@ export default function EnvPanel3({
   loadHDR,
 }) {
   const { scene, camera } = useThree();
-  const { isLoadingHDR } = useGuiStore(); // ✅ ローディング状態取得
+  const { isLoadingHDR } = useGuiStore();
 
   const {
     environment,
@@ -60,43 +59,20 @@ export default function EnvPanel3({
     },
   });
 
-  // 環境マップの適用とライトの制御
+  // 環境テクスチャ & ライト制御
   useEffect(() => {
     scene.environment = environment ? environmentTexture : null;
-
     if (directionallight) directionallight.visible = !environment;
     if (ambientLight) ambientLight.visible = !environment;
   }, [environment, environmentTexture]);
 
-  // 背景とパーティクル表示の制御（パーティクル操作はここに集約）
+  // 背景表示制御
   useEffect(() => {
-    console.log("🔍 background:", background);
-    console.log("🔍 environmentTexture:", environmentTexture);
-
-    // 背景テクスチャを適用またはクリア
     scene.background =
       background && environmentTexture ? environmentTexture : null;
-
-    // パーティクル表示切り替え
-    if (particleSystem) {
-      const shouldShow = !background;
-
-      if (shouldShow) {
-        if (!scene.children.includes(particleSystem)) {
-          scene.add(particleSystem);
-          console.log("🟢 particleSystem added to scene");
-        }
-        particleSystem.position.copy(camera.position);
-      } else {
-        if (scene.children.includes(particleSystem)) {
-          scene.remove(particleSystem);
-          console.log("🔴 particleSystem removed from scene");
-        }
-      }
-    }
   }, [background, environmentTexture]);
 
-  // 床の表示・テクスチャ制御
+  // 床のテクスチャと表示制御
   useEffect(() => {
     if (floor1 && floor2) {
       floor1.visible = floor2.visible = planeVisible;
@@ -109,10 +85,10 @@ export default function EnvPanel3({
     }
   }, [planeVisible, floor1TextureVisible, floor2TextureVisible]);
 
-  // ビームの生成制御
+  // ビームの生成制御（Coneからのワールド位置取得）
   useEffect(() => {
-    if (greenBeam) greenBeam.dispose?.();
-    if (orangeBeam) orangeBeam.dispose?.();
+    greenBeam?.dispose?.();
+    orangeBeam?.dispose?.();
 
     if (beamVisible && modelRef) {
       const conePos = new THREE.Vector3();
@@ -128,13 +104,13 @@ export default function EnvPanel3({
     }
   }, [beamVisible]);
 
-  // 環境マップの読み込みトリガー
+  // HDRIマップの読み込み
   useEffect(() => {
     const url = envMapList[envMap];
     if (url) loadHDR(url);
   }, [envMap]);
 
-  return(
+  return (
     <>
       {isLoadingHDR && (
         <Html center>
@@ -144,7 +120,6 @@ export default function EnvPanel3({
         </Html>
       )}
 
-      {/* ✅ 背景がオフならスター表示 */}
       {!background && (
         <Stars
           radius={100}
@@ -157,5 +132,4 @@ export default function EnvPanel3({
       )}
     </>
   );
-
 }

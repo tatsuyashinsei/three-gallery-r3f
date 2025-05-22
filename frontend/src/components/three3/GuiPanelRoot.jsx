@@ -1,8 +1,8 @@
 // src/components/three3/GuiPanelRoot.jsx
 
 import { Suspense, useMemo, useRef, useState } from "react";
-import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { useThree } from "@react-three/fiber";
 
 import Model3 from "./Model3";
 import Floor3 from "./Floor3";
@@ -10,19 +10,14 @@ import GuiPanel3 from "./GuiPanel3";
 import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
 export default function GuiPanelRoot({ createBeam }) {
-  const { setEnvironmentTexture } = useThree(); // 今は未使用だが保持
   const [environmentTexture, setEnvTexture] = useState(null);
-
-  // ✅ ローカル状態で制御（Zustandではなく useState）
   const [modelVisible, setModelVisible] = useState(true);
   const [floorVisible, setFloorVisible] = useState(true);
 
   const floor1 = useRef();
   const floor2 = useRef();
   const modelRef = useRef();
-  const dirLight = useRef();
-  const ambientLight = useRef();
-  const testLight = useRef();
+  const testLight = useRef(); // 将来使う予定なら残す
 
   const texture1 = useMemo(
     () => new THREE.TextureLoader().load("/tex1.jpg"),
@@ -45,7 +40,6 @@ export default function GuiPanelRoot({ createBeam }) {
   return (
     <>
       <Suspense fallback={null}>
-        {/* ✅ 表示制御付き */}
         <Model3 visible={modelVisible} modelRef={modelRef} />
         <Floor3 visible={floorVisible} floor1Ref={floor1} floor2Ref={floor2} />
       </Suspense>
@@ -60,7 +54,6 @@ export default function GuiPanelRoot({ createBeam }) {
         createBeam={createBeam}
         loadHDR={handleLoadJPG}
         testLight={testLight.current}
-        // ✅ トグル制御用の props
         modelVisible={modelVisible}
         setModelVisible={setModelVisible}
         floorVisible={floorVisible}

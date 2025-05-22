@@ -3,11 +3,11 @@
 import { useGLTF } from "@react-three/drei";
 import { useEffect, useRef } from "react";
 
-export default function Model3({ visible = true, modelRef }) {
-  const { scene } = useGLTF(
-    "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb"
-  );
+const MODEL_URL =
+  "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb";
 
+export default function Model3({ visible = true, modelRef }) {
+  const { scene } = useGLTF(MODEL_URL);
   const groupRef = useRef();
 
   useEffect(() => {
@@ -17,8 +17,10 @@ export default function Model3({ visible = true, modelRef }) {
       child.receiveShadow = true;
     });
 
-    // 外部参照に group を渡す（groupRef経由）
-    if (modelRef) modelRef.current = groupRef.current;
+    // 外部からアクセスできるように ref に登録
+    if (modelRef?.current !== undefined) {
+      modelRef.current = groupRef.current;
+    }
   }, [scene, modelRef]);
 
   return (
@@ -33,3 +35,4 @@ export default function Model3({ visible = true, modelRef }) {
     </group>
   );
 }
+

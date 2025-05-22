@@ -1,4 +1,3 @@
-// panels/MaterialPanel3.jsx
 import { useControls } from "leva";
 import { useEffect } from "react";
 
@@ -14,7 +13,7 @@ export default function MaterialPanel3({ floor1, floor2 }) {
     transmission,
     thickness,
     ior,
-  } = useControls("プレート調整", {
+  } = useControls("Floor Material", {
     rotationY: {
       value: 0,
       min: -8.154,
@@ -40,14 +39,13 @@ export default function MaterialPanel3({ floor1, floor2 }) {
   });
 
   useEffect(() => {
-    if (!floor1 || !floor2) return;
+    const meshes = [floor1, floor2];
+    meshes.forEach((mesh) => {
+      if (!mesh || !mesh.material) return;
 
-    // 回転・位置
-    floor1.rotation.y = floor2.rotation.y = rotationY;
-    floor1.position.y = floor2.position.y = positionY;
+      mesh.rotation.y = rotationY;
+      mesh.position.y = positionY;
 
-    // マテリアル更新
-    const updateMaterial = (mesh) => {
       const mat = mesh.material;
       mat.envMapIntensity = envMapIntensity;
       mat.roughness = roughness;
@@ -58,10 +56,7 @@ export default function MaterialPanel3({ floor1, floor2 }) {
       mat.thickness = thickness;
       mat.ior = ior;
       mat.needsUpdate = true;
-    };
-
-    updateMaterial(floor1);
-    updateMaterial(floor2);
+    });
   }, [
     floor1,
     floor2,
