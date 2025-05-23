@@ -25,7 +25,6 @@ export default function EnvPanel3({
   const { scene } = useThree();
   const { isLoadingHDR } = useGuiStore();
 
-  // Leva UI 統合コントロール
   const {
     environment,
     background,
@@ -35,20 +34,23 @@ export default function EnvPanel3({
     envMap,
   } = useEnvControls();
 
-  // 環境マップとライト切り替え
+  // ✅ 環境マップとライトの切り替え
   useEffect(() => {
     scene.environment = environment ? environmentTexture : null;
     if (directionallight) directionallight.visible = !environment;
     if (ambientLight) ambientLight.visible = !environment;
   }, [environment, environmentTexture]);
 
-  // 背景テクスチャ切り替え
+  // ✅ 背景テクスチャの設定
   useEffect(() => {
-    scene.background =
-      background && environmentTexture ? environmentTexture : null;
+    if (background && environmentTexture) {
+      scene.background = environmentTexture;
+    } else if (!background) {
+      scene.background = null; // Stars 用
+    }
   }, [background, environmentTexture]);
 
-  // HDR 読み込みトリガー
+  // ✅ HDR 読み込みトリガー
   useEffect(() => {
     const url = envMapList[envMap];
     if (url) loadHDR(url);
