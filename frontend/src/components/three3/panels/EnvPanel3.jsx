@@ -2,6 +2,8 @@ import { useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { useEffect } from "react";
 import useGuiStore from "@/store/useGuiStore";
+import { useControls } from "leva";
+
 
 import { useEnvControls, envMapList } from "./Env3Controllers/EnvControls";
 import FloorTextureController from "./Env3Controllers/FloorTextureController";
