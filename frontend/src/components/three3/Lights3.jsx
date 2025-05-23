@@ -20,7 +20,7 @@ export default function Lights3({ dirRef, ambientRef }) {
       />
       <directionalLight
         ref={internalDirRef}
-        intensity={Math.PI * 1}
+        intensity={Math.PI * 0.5}
         color={0xebfeff}
         position={[-12, 0.1, 1]}
         castShadow
