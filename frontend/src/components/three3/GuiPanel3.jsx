@@ -32,11 +32,11 @@ export default function GuiPanel3({
       value: modelVisible,
       onChange: setModelVisible,
     },
-    テクスチャ表: {
+    "ボード（表）表示": {
       value: floor1TextureVisible,
       onChange: setFloor1TextureVisible,
     },
-    テクスチャ裏: {
+    "ボード（裏）表示": {
       value: floor2TextureVisible,
       onChange: setFloor2TextureVisible,
     },
