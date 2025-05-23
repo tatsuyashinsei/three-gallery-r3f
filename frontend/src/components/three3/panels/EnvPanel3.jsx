@@ -1,25 +1,12 @@
-// src/components/three3/panels/EnvPanel3.jsx
-
-//------------------------------------Faze 1
-
 import { useThree } from "@react-three/fiber";
-import { useControls } from "leva";
-import { Html, Stars } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import { useEffect } from "react";
-import * as THREE from "three";
 import useGuiStore from "@/store/useGuiStore";
 
-// HDRI 背景の選択肢一覧
-const envMapList = {
-  選択してくださいーー:
-    "https://cdn.jsdelivr.net/gh/threejsconf/hdr@main/ShinseiIriguchiMae_small.jpg",
-  "いちばん星前・中画質":
-    "https://cdn.jsdelivr.net/gh/threejsconf/hdr@main/ShinseiIriguchiMae_mid.jpg",
-  "グリコ・中画質":
-    "https://cdn.jsdelivr.net/gh/threejsconf/hdr@main/EbisuBashi_mid.jpg",
-  "阿倍野ハルカス・中画質":
-    "https://cdn.jsdelivr.net/gh/threejsconf/hdr@main/Harukas_mid.jpg",
-};
+import { useEnvControls, envMapList } from "./Env3Controllers/EnvControls";
+import FloorTextureController from "./Env3Controllers/FloorTextureController";
+import BeamController from "./Env3Controllers/BeamController";
+import BackgroundController from "./Env3Controllers/BackgroundController";
 
 export default function EnvPanel3({
   floor1,
@@ -29,16 +16,16 @@ export default function EnvPanel3({
   environmentTexture,
   directionallight,
   ambientLight,
-  particleSystem, // 未使用
   modelRef,
   greenBeam,
   orangeBeam,
   createBeam,
   loadHDR,
 }) {
-  const { scene, camera } = useThree();
+  const { scene } = useThree();
   const { isLoadingHDR } = useGuiStore();
 
+  // Leva UI 統合コントロール
   const {
     environment,
     background,
@@ -68,7 +55,7 @@ export default function EnvPanel3({
     if (ambientLight) ambientLight.visible = !environment;
   }, [environment, environmentTexture]);
 
-  // 背景表示の制御
+  // 背景テクスチャ切り替え
   useEffect(() => {
     scene.background =
       background && environmentTexture ? environmentTexture : null;
@@ -76,11 +63,12 @@ export default function EnvPanel3({
 
   // 床のテクスチャ制御
   useEffect(() => {
+
     console.log("floor1:", floor1);
     console.log("floor2:", floor2);
     console.log("floor1.material:", floor1?.material);
     console.log("floor2.material:", floor2?.material);
-
+    
     const mesh1 = floor1?.current;
     const mesh2 = floor2?.current;
 
@@ -101,8 +89,6 @@ export default function EnvPanel3({
     floor1TextureVisible,
     floor2TextureVisible,
   ]);
-
-  //------------------------------------Faze 3
 
   // ビーム生成処理
   useEffect(() => {
@@ -131,21 +117,32 @@ export default function EnvPanel3({
 
   return (
     <>
+      <FloorTextureController
+        floor1={floor1}
+        floor2={floor2}
+        texture1={texture1}
+        texture2={texture2}
+        floor1TextureVisible={floor1TextureVisible}
+        floor2TextureVisible={floor2TextureVisible}
+      />
+
+      <BeamController
+        scene={scene}
+        beamVisible={beamVisible}
+        modelRef={modelRef}
+        greenBeam={greenBeam}
+        orangeBeam={orangeBeam}
+        createBeam={createBeam}
+      />
+
+      <BackgroundController backgroundEnabled={background} />
+
       {isLoadingHDR && (
         <Html center>
-          <div style={{ color: "white", fontSize: "1.2rem" }}></div>
+          <div style={{ color: "white", fontSize: "1.2rem" }}>
+            
+          </div>
         </Html>
-      )}
-
-      {!background && (
-        <Stars
-          radius={100}
-          depth={50}
-          count={5000}
-          factor={4}
-          fade
-          speed={0.5}
-        />
       )}
     </>
   );
