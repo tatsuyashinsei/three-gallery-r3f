@@ -12,35 +12,30 @@ export default function Model3({ visible = true, modelRef }) {
   const groupRef = useRef();
 
   useEffect(() => {
-    console.log("🔄 モデルロード完了: IchibanboshiModeling5comp.glb");
-    let found = false;
+    console.log("🔄 モデルロード完了:", MODEL_URL);
 
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
 
-        // ⭐️ 特定メッシュの検出とマテリアル処理
+        // ⭐ 各マテリアルを clone（オリジナル破壊しないように）
+        child.material = child.material.clone();
+        child.material.needsUpdate = true;
+
+        // Bloom など適用が必要なら以下も調整
         if (child.name === "Cone_Color_0") {
-          found = true;
-          console.log("🎯 'Cone_Color_0' 検出！マテリアルを clone");
-          child.material = child.material.clone();
-          child.material.needsUpdate = true;
-          console.log("✅ clone後 material:", child.material);
+          console.log("🎯 Cone_Color_0 検出、emissive 設定");
+          child.material.emissive = new THREE.Color(0xffffff);
+          child.material.emissiveIntensity = 20;
         }
       }
     });
 
-    if (!found) {
-      console.warn("⚠️ 'Cone_Color_0' がモデル内に見つかりませんでした");
-    }
-
+    // ✅ モデル全体を渡す（cone だけでなく group 全体）
     if (modelRef) {
       modelRef.current = groupRef.current;
-      console.log(
-        "📦 modelRef.current に groupRef 設定完了:",
-        modelRef.current
-      );
+      console.log("📦 modelRef.current に group を設定:", groupRef.current);
     }
   }, [scene, modelRef]);
 

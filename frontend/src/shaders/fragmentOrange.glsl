@@ -1,3 +1,5 @@
+// fragmentOrange.glsl
+
 precision mediump float;
 
 varying float vAlpha;
@@ -10,21 +12,3 @@ void main() {
   gl_FragColor = vec4(orange, vAlpha); // ✅ vAlpha を適用
 }
 
-// precision mediump float;
-
-// varying float vAlpha;
-// varying vec3 vColor;
-
-// void main() {
-//   float dist = length(gl_PointCoord - vec2(0.5));
-//   if (dist > 0.5) discard;
-
-//   float strength = 1.0 - dist;
-//   strength = pow(strength, 1.0);
-
-//   vec3 yellowBias = vec3(1.0, 0.9, 0.0); // 黄寄せ
-//   // vec3 finalColor = vColor * strength;
-//   vec3 finalColor = vColor * yellowBias * strength;
-  
-//   gl_FragColor = vec4(finalColor, vAlpha);
-// }

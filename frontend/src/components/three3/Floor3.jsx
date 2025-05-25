@@ -9,7 +9,7 @@ export default function Floor3({
   visible = true,
   textureVisible1 = true,
   textureVisible2 = true,
-  position = [-124, -12, -34.6], // XYZ位置
+  position = [-138, -12, -38.3], // XYZ位置
   rotation = [0, -Math.PI / 1.7, 0], // XYZ回転（初期はX軸に-90度）
 }) {
   const floorRef = useRef();
@@ -44,13 +44,13 @@ export default function Floor3({
     <group visible={visible}>
       {/* 表 */}
       <mesh ref={floorRef} position={position} rotation={rotation}>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[25, 25]} />
         <meshPhysicalMaterial map={textureVisible1 ? tex1 : null} />
       </mesh>
 
       {/* 裏 */}
       <mesh ref={floorBackRef}>
-        <planeGeometry args={[50, 50]} />
+        <planeGeometry args={[25, 25]} />
         <meshPhysicalMaterial
           map={textureVisible2 ? tex2 : null}
           side={THREE.BackSide}

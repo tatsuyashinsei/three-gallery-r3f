@@ -2,7 +2,6 @@
 
 import { Suspense, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useThree } from "@react-three/fiber";
 
 import Model3 from "./Model3";
 import Floor3 from "./Floor3";
@@ -17,6 +16,7 @@ export default function GuiPanelRoot({ createBeam }) {
   const [floorVisible, setFloorVisible] = useState(true);
   const [floor1TextureVisible, setFloor1TextureVisible] = useState(false);
   const [floor2TextureVisible, setFloor2TextureVisible] = useState(false);
+  const [beamVisible, setBeamVisible] = useState(true); // ✅ ビーム表示トグル
 
   const modelRef = useRef();
   const testLight = useRef();
@@ -51,8 +51,8 @@ export default function GuiPanelRoot({ createBeam }) {
       </Suspense>
 
       <GuiPanel3
-        floor1={null} // もう未使用
-        floor2={null} // 同上
+        floor1={null}
+        floor2={null}
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}
@@ -68,6 +68,8 @@ export default function GuiPanelRoot({ createBeam }) {
         setFloor1TextureVisible={setFloor1TextureVisible}
         floor2TextureVisible={floor2TextureVisible}
         setFloor2TextureVisible={setFloor2TextureVisible}
+        beamVisible={beamVisible} // ✅ 渡す
+        setBeamVisible={setBeamVisible} // ✅ 渡す
       />
     </>
   );

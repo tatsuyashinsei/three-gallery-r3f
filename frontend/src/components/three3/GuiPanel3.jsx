@@ -1,9 +1,9 @@
 // src/components/three3/GuiPanel3.jsx
 
+import { useControls } from "leva";
 import EnvPanel3 from "./panels/EnvPanel3";
 import ModelPanel3 from "./panels/ModelPanel3";
 import MaterialPanel3 from "./panels/MaterialPanel3";
-import { useControls } from "leva";
 
 export default function GuiPanel3({
   texture1,
@@ -21,8 +21,10 @@ export default function GuiPanel3({
   setFloor1TextureVisible,
   floor2TextureVisible,
   setFloor2TextureVisible,
+  beamVisible,
+  setBeamVisible,
 }) {
-  // ✅ LevaでまとめてトグルUIを管理
+  // ✅ LevaトグルUI（onChange にロジック含む）
   useControls("表示切替", {
     "Floor 表示": {
       value: floorVisible,
@@ -40,6 +42,17 @@ export default function GuiPanel3({
       value: floor2TextureVisible,
       onChange: setFloor2TextureVisible,
     },
+    ビーム表示: {
+      value: beamVisible,
+      onChange: (val) => {
+        console.log("🟢 ビーム表示トグル:", val);
+        setBeamVisible(val);
+        if (val) {
+          console.log("🎯 createBeam 発火");
+          createBeam();
+        }
+      },
+    },
   });
 
   return (
@@ -55,7 +68,7 @@ export default function GuiPanel3({
         floor2TextureVisible={floor2TextureVisible}
       />
       <ModelPanel3 modelRef={modelRef} testLight={testLight} />
-      <MaterialPanel3 /> {/* Floorの直接操作は削除済みと仮定 */}
+      <MaterialPanel3 />
     </>
   );
 }

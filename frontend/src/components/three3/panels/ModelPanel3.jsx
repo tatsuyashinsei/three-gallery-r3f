@@ -1,23 +1,13 @@
+// src/components/three3/ModelPanel3.jsx
+
 import { useControls } from "leva";
 import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
 
 export default function ModelPanel3({ modelRef }) {
-  const matRef = useRef(null);
+  const materialRefs = useRef([]);
 
-  const {
-    emissiveIntensity: targetEmissiveIntensity,
-    roughness,
-    metalness,
-    envMapIntensity,
-    clearcoat,
-    iridescence,
-    transmission,
-    thickness,
-    ior,
-    opacity,
-  } = useControls("モデル設定", {
+  const controls = useControls("モデル設定", {
     emissiveIntensity: { value: 7, min: 0, max: 15 },
     roughness: { value: 0.1, min: 0, max: 1 },
     metalness: { value: 0.7, min: 0, max: 1 },
@@ -30,79 +20,73 @@ export default function ModelPanel3({ modelRef }) {
     opacity: { value: 1.0, min: 0, max: 1 },
   });
 
-  // ⭐ 遅延で modelRef.current を待ってから初期化
   useEffect(() => {
     let retries = 0;
     const maxRetries = 20;
 
     function trySetup() {
-      if (!modelRef?.current) {
-        console.warn("🔴 modelRef.current is null (retrying...)", retries);
+      const current = modelRef?.current;
+      if (!current || typeof current.traverse !== "function") {
+        console.warn(
+          `🔴 modelRef.current is not ready (retrying... ${retries})`
+        );
         if (retries < maxRetries) {
           retries++;
-          setTimeout(trySetup, 300); // 0.3秒後に再試行
+          setTimeout(trySetup, 300);
         }
         return;
       }
 
-      let found = false;
-
-      modelRef.current.traverse((child) => {
-        if (child.isMesh && child.name === "Cone_Color_0" && child.material) {
-          matRef.current = child.material;
-          matRef.current.emissive = new THREE.Color(0xffff88);
-          matRef.current.emissiveIntensity = 0;
-          matRef.current.needsUpdate = true;
-          found = true;
-          console.log("✅ Cone_Color_0 マテリアル取得完了");
+      const collected = [];
+      current.traverse((child) => {
+        if (child.isMesh && child.material) {
+          // マテリアルが配列のとき（multiMaterial）も対応
+          const materials = Array.isArray(child.material)
+            ? child.material
+            : [child.material];
+          materials.forEach((mat) => {
+            mat.emissive = mat.emissive ?? { r: 1, g: 1, b: 1 };
+            mat.emissiveIntensity = 0;
+            mat.needsUpdate = true;
+            collected.push(mat);
+          });
         }
       });
 
-      if (!found) console.warn("⚠️ Cone_Color_0 が見つかりませんでした");
+      materialRefs.current = collected;
+      console.log("✅ マテリアル対象数:", collected.length);
     }
 
     trySetup();
   }, [modelRef]);
 
-  // 🌟 emissiveIntensity にイーズ適用
+  // フレーム毎に emissiveIntensity をイーズインで更新
   useFrame(() => {
-    const mat = matRef.current;
-    if (!mat) return;
-
-    const delta = targetEmissiveIntensity - mat.emissiveIntensity;
-    if (Math.abs(delta) > 0.01) {
-      mat.emissiveIntensity += delta * 0.2;
-      mat.needsUpdate = true;
-    }
+    materialRefs.current.forEach((mat) => {
+      const delta = controls.emissiveIntensity - mat.emissiveIntensity;
+      if (Math.abs(delta) > 0.01) {
+        mat.emissiveIntensity += delta * 0.2;
+        mat.needsUpdate = true;
+      }
+    });
   });
 
-  // 他プロパティは即反映
+  // 他のパラメータは即時反映
   useEffect(() => {
-    const mat = matRef.current;
-    if (!mat) return;
-
-    mat.roughness = roughness;
-    mat.metalness = metalness;
-    mat.envMapIntensity = envMapIntensity;
-    mat.clearcoat = clearcoat;
-    mat.iridescence = iridescence;
-    mat.transmission = transmission;
-    mat.thickness = thickness;
-    mat.ior = ior;
-    mat.opacity = opacity;
-    mat.transparent = opacity < 1;
-    mat.needsUpdate = true;
-  }, [
-    roughness,
-    metalness,
-    envMapIntensity,
-    clearcoat,
-    iridescence,
-    transmission,
-    thickness,
-    ior,
-    opacity,
-  ]);
+    materialRefs.current.forEach((mat) => {
+      mat.roughness = controls.roughness;
+      mat.metalness = controls.metalness;
+      mat.envMapIntensity = controls.envMapIntensity;
+      mat.clearcoat = controls.clearcoat;
+      mat.iridescence = controls.iridescence;
+      mat.transmission = controls.transmission;
+      mat.thickness = controls.thickness;
+      mat.ior = controls.ior;
+      mat.opacity = controls.opacity;
+      mat.transparent = controls.opacity < 1;
+      mat.needsUpdate = true;
+    });
+  }, [controls]);
 
   return null;
 }
