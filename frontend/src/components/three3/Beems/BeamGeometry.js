@@ -1,3 +1,5 @@
+// BeamGeometry.js
+
 import * as THREE from "three";
 
 export function createBeamGeometry({
@@ -42,6 +44,7 @@ export function createBeamGeometry({
 
     positions.push(finalPos.x, finalPos.y, finalPos.z);
 
+    // ✅ 寿命と誕生時間の範囲を外部から受け取って調整
     birthTimes.push(
       birthTimeRange[0] +
         Math.random() * (birthTimeRange[1] - birthTimeRange[0])

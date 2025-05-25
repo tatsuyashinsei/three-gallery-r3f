@@ -18,7 +18,7 @@ function getBeamParams(type) {
       ],
       uSize: 128.0,
       scale: 20.0,
-      lengthFactor: 6.0,
+      lengthFactor: 16.0,
       rotationZDeg: 21,
       vertex: vertexShaderOrange,
       fragment: fragmentShaderOrange,
@@ -48,8 +48,10 @@ export function createBeamEffect(
     start = new THREE.Vector3(0, 0, 0),
     end = new THREE.Vector3(1, 0, 0),
     intensityMultiplier = 0.6,
-    alphaExponent = 0.5,
+    alphaExponent = 0.1,
     fadeInDuration = 14.5,
+    lifetimeRange = [0.1, 0.2],
+    birthTimeRange = [0.0, 1.0],
   } = {}
 ) {
   const {
@@ -67,7 +69,10 @@ export function createBeamEffect(
     .addVectors(start, end)
     .multiplyScalar(0.5);
 
-  // ---------- Geometry ----------
+  console.log(`[createBeamEffect] type=${type}`);
+  console.log(`[createBeamEffect] lifetimeRange=`, lifetimeRange);
+  console.log(`[createBeamEffect] birthTimeRange=`, birthTimeRange);
+
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(PARTICLE_COUNT * 3);
   const birthTimes = new Float32Array(PARTICLE_COUNT);
@@ -100,8 +105,11 @@ export function createBeamEffect(
     positions[i3 + 1] = pos.y + (Math.random() - 0.5) * RANDOM_OFFSET;
     positions[i3 + 2] = pos.z + (Math.random() - 0.5) * RANDOM_OFFSET;
 
-    birthTimes[i] = Math.random() * 5.0;
-    lifetimes[i] = 2.0 + Math.pow(Math.random(), 2.0) * 2.0;
+    birthTimes[i] =
+      birthTimeRange[0] +
+      Math.random() * (birthTimeRange[1] - birthTimeRange[0]);
+    lifetimes[i] =
+      lifetimeRange[0] + Math.random() * (lifetimeRange[1] - lifetimeRange[0]);
 
     const [r, g, b] = colorFn();
     colors[i3 + 0] = r;
@@ -111,13 +119,15 @@ export function createBeamEffect(
     scales[i] = 0.5 + Math.pow(Math.random(), 2.0);
   }
 
+  console.log("[createBeamEffect] sample lifetimes:", lifetimes.slice(0, 10));
+  console.log("[createBeamEffect] sample birthTimes:", birthTimes.slice(0, 10));
+
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("aBirthTime", new THREE.BufferAttribute(birthTimes, 1));
   geometry.setAttribute("aLifetime", new THREE.BufferAttribute(lifetimes, 1));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   geometry.setAttribute("aScale", new THREE.BufferAttribute(scales, 1));
 
-  // ---------- Material ----------
   const material = new THREE.ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
@@ -135,7 +145,6 @@ export function createBeamEffect(
     },
   });
 
-  // ---------- Points ----------
   const points = new THREE.Points(geometry, material);
   points.position.copy(midpoint);
   points.scale.setScalar(scale);
@@ -145,6 +154,7 @@ export function createBeamEffect(
   return {
     update(elapsed) {
       material.uniforms.uTime.value = elapsed;
+      console.log("[BeamEffect:update] uTime:", elapsed.toFixed(3));
     },
     dispose() {
       scene.remove(points);
