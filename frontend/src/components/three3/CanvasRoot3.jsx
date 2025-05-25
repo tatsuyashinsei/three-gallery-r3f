@@ -36,7 +36,7 @@ function BeamOriginTracker({ modelRef, setBeamPosition }) {
     if (cone) {
       const pos = new THREE.Vector3();
       cone.getWorldPosition(pos);
-      setBeamPosition(pos); // 状態を更新
+      setBeamPosition(pos);
     }
   });
   return null;
@@ -46,15 +46,29 @@ export default function CanvasRoot3() {
   const [beamVisible, setBeamVisible] = useState(false);
   const [beamPosition, setBeamPosition] = useState(new THREE.Vector3());
   const modelRef = useRef(null);
-  const manualOffset = new THREE.Vector3(-137, 6, -38.5); // ⭐️ ビームの位置を調整
+  const manualOffset = new THREE.Vector3(-137, 6, -38.5);
 
   const createBeam = () => {
     console.log("⚡️ createBeam 呼び出し");
     setBeamVisible(true);
   };
 
-  // ✅ end を beamPosition から右に伸ばす
-  const beamEnd = beamPosition.clone().add(new THREE.Vector3(1, 0, 0));
+  // ✅ グリーンビームの開始・終点
+  const greenStart = beamPosition;
+  const greenDirection = new THREE.Vector3(1, 0, 0.27)  // 基本方向（右向き）
+    .applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 18);  // 10度回転
+  const greenEnd = beamPosition.clone().add(greenDirection);
+
+  // ✅ オレンジビームの開始位置（グリーンとほぼ同じ位置に）
+  const orangeStart = beamPosition.clone().add(new THREE.Vector3(0, -0.2, 0));
+  
+  // ✅ オレンジビームの方向ベクトルを計算（長さ1.2倍）
+  const orangeDirection = new THREE.Vector3(1, 0, 0.26)  // 基本方向（右向き）
+    .applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 9)  // 12度回転
+    .multiplyScalar(1.2);  // 長さを1.2倍に
+  
+  // ✅ オレンジビームの終点（新しい原点から方向ベクトルを適用）
+  const orangeEnd = orangeStart.clone().add(orangeDirection);
 
   return (
     <Canvas
@@ -78,8 +92,14 @@ export default function CanvasRoot3() {
         >
           <BeamEffect
             type="green"
-            start={beamPosition}
-            end={beamEnd}
+            start={greenStart}
+            end={greenEnd}
+            visible={true}
+          />
+          <BeamEffect
+            type="orange"
+            start={orangeStart}
+            end={orangeEnd}
             visible={true}
           />
         </group>
@@ -94,3 +114,4 @@ export default function CanvasRoot3() {
     </Canvas>
   );
 }
+
