@@ -1,3 +1,5 @@
+// SceneContent3.jsx
+
 import { useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -5,7 +7,7 @@ import { useControls } from "leva";
 import * as THREE from "three";
 import BeamEffect from "./BeamEffect";
 
-export default function SceneContent3({ onSceneReady, modelRef }) {
+export default function SceneContent3({ onSceneReady, modelRef, beamVisible }) {
   const { scene } = useThree();
 
   const { endX, endZ } = useControls("Beam End (共通)", {
@@ -31,10 +33,6 @@ export default function SceneContent3({ onSceneReady, modelRef }) {
     setEndGreen(end.clone());
     setStartOrange(base.clone());
     setEndOrange(end.clone());
-
-    // 💡 デバッグ用
-    // console.log("[SceneContent3] Green Start:", base.toArray())
-    // console.log("[SceneContent3] Green End:", end.toArray())
   });
 
   useEffect(() => {
@@ -43,12 +41,6 @@ export default function SceneContent3({ onSceneReady, modelRef }) {
       onSceneReady(scene);
     }
   }, [onSceneReady, scene]);
-
-  useEffect(() => {
-    console.log(
-      "[SceneContent3] 🧪 強制ビーム表示モード：green & orange を出力"
-    );
-  }, []);
 
   return (
     <>
@@ -59,14 +51,14 @@ export default function SceneContent3({ onSceneReady, modelRef }) {
         alpha={2.0}
         start={startGreen}
         end={endGreen}
-        visible={true}
+        visible={beamVisible}
       />
       <BeamEffect
         type="orange"
         alpha={2.0}
         start={startOrange}
         end={endOrange}
-        visible={true}
+        visible={beamVisible}
       />
     </>
   );
