@@ -12,6 +12,7 @@ export default function GuiPanel3({
   environmentTexture,
   modelRef,
   createBeam,
+  removeBeam, // 🆕 追加！
   loadHDR,
   testLight,
   modelVisible,
@@ -25,12 +26,15 @@ export default function GuiPanel3({
   beamVisible,
   setBeamVisible,
 }) {
+<<<<<<< HEAD
   // ✅ beamVisible の変更を監視
   useEffect(() => {
     console.log("🔄 [GuiPanel3] beamVisible prop changed:", beamVisible);
   }, [beamVisible]);
 
   // ✅ LevaトグルUI（onChange にロジック含む）
+=======
+>>>>>>> 338a77370d23e233cc2c2059ff2b3e3f564322b4
   useControls("表示切替", {
     "Floor 表示": {
       value: floorVisible,
@@ -61,6 +65,9 @@ export default function GuiPanel3({
         if (val) {
           console.log("⚡️ [GuiPanel3] createBeam 発火");
           createBeam();
+        } else {
+          console.log("🛑 removeBeam 発火");
+          removeBeam?.(); // removeBeam が存在すれば呼び出す
         }
       },
     },
@@ -83,3 +90,4 @@ export default function GuiPanel3({
     </>
   );
 }
+

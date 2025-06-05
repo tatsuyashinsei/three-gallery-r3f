@@ -1,12 +1,47 @@
+<<<<<<< HEAD
 import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
+=======
+// SceneContent3.jsx
+
+import { useEffect, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+>>>>>>> 338a77370d23e233cc2c2059ff2b3e3f564322b4
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import Model3 from "./Model3";
 
-export default function SceneContent3({ onSceneReady, modelRef }) {
+export default function SceneContent3({ onSceneReady, modelRef, beamVisible }) {
   const { scene } = useThree();
 
+<<<<<<< HEAD
+=======
+  const { endX, endZ } = useControls("Beam End (共通)", {
+    endX: { value: 5, min: -20, max: 20, step: 0.1 },
+    endZ: { value: 0, min: -5, max: 5, step: 0.1 },
+  });
+
+  const [startGreen, setStartGreen] = useState(new THREE.Vector3());
+  const [endGreen, setEndGreen] = useState(new THREE.Vector3());
+  const [startOrange, setStartOrange] = useState(new THREE.Vector3());
+  const [endOrange, setEndOrange] = useState(new THREE.Vector3());
+
+  useFrame(() => {
+    if (!modelRef?.current) return;
+
+    const pos = modelRef.current.position.clone();
+    const yOffset = -0.05;
+
+    const base = pos.clone().add(new THREE.Vector3(0, yOffset, 0));
+    const end = pos.clone().add(new THREE.Vector3(endX * 2.0, yOffset, endZ));
+
+    setStartGreen(base.clone());
+    setEndGreen(end.clone());
+    setStartOrange(base.clone());
+    setEndOrange(end.clone());
+  });
+
+>>>>>>> 338a77370d23e233cc2c2059ff2b3e3f564322b4
   useEffect(() => {
     if (onSceneReady && scene) {
       console.log("[SceneContent3] ✅ シーンが準備完了");
@@ -17,7 +52,25 @@ export default function SceneContent3({ onSceneReady, modelRef }) {
   return (
     <>
       <OrbitControls enableDamping makeDefault />
+<<<<<<< HEAD
       <Model3 modelRef={modelRef} />
+=======
+
+      <BeamEffect
+        type="green"
+        alpha={2.0}
+        start={startGreen}
+        end={endGreen}
+        visible={beamVisible}
+      />
+      <BeamEffect
+        type="orange"
+        alpha={2.0}
+        start={startOrange}
+        end={endOrange}
+        visible={beamVisible}
+      />
+>>>>>>> 338a77370d23e233cc2c2059ff2b3e3f564322b4
     </>
   );
 }

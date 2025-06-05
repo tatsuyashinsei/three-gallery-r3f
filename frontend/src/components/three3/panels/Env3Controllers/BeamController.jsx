@@ -1,4 +1,5 @@
-// Env3Controllers/BeamController.jsx
+// src/components/three3/panels/Env3Controllers/BeamController.jsx
+
 import { useEffect } from "react";
 import * as THREE from "three";
 
@@ -11,9 +12,20 @@ export default function BeamController({
   createBeam,
 }) {
   useEffect(() => {
-    greenBeam?.dispose?.();
-    orangeBeam?.dispose?.();
+    // 💥 既存ビームがあれば、シーンから削除して破棄する
+    if (greenBeam) {
+      scene.remove(greenBeam);
+      greenBeam.geometry?.dispose?.();
+      greenBeam.material?.dispose?.();
+    }
 
+    if (orangeBeam) {
+      scene.remove(orangeBeam);
+      orangeBeam.geometry?.dispose?.();
+      orangeBeam.material?.dispose?.();
+    }
+
+    // ✅ beamVisible が true のときのみ再生成
     if (beamVisible && modelRef) {
       const conePos = new THREE.Vector3();
 
