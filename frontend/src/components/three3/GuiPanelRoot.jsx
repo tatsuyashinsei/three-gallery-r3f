@@ -8,7 +8,7 @@ import Floor3 from "./Floor3";
 import GuiPanel3 from "./GuiPanel3";
 import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
-export default function GuiPanelRoot({ createBeam }) {
+export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, modelRef }) {
   const [environmentTexture, setEnvTexture] = useState(null);
 
   // 表示制御
@@ -16,9 +16,7 @@ export default function GuiPanelRoot({ createBeam }) {
   const [floorVisible, setFloorVisible] = useState(true);
   const [floor1TextureVisible, setFloor1TextureVisible] = useState(false);
   const [floor2TextureVisible, setFloor2TextureVisible] = useState(false);
-  const [beamVisible, setBeamVisible] = useState(true); // ✅ ビーム表示トグル
 
-  const modelRef = useRef();
   const testLight = useRef();
 
   const texture1 = useMemo(
@@ -68,8 +66,8 @@ export default function GuiPanelRoot({ createBeam }) {
         setFloor1TextureVisible={setFloor1TextureVisible}
         floor2TextureVisible={floor2TextureVisible}
         setFloor2TextureVisible={setFloor2TextureVisible}
-        beamVisible={beamVisible} // ✅ 渡す
-        setBeamVisible={setBeamVisible} // ✅ 渡す
+        beamVisible={beamVisible}
+        setBeamVisible={setBeamVisible}
       />
     </>
   );

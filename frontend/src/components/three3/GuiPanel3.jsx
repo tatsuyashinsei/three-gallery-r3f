@@ -4,6 +4,7 @@ import { useControls } from "leva";
 import EnvPanel3 from "./panels/EnvPanel3";
 import ModelPanel3 from "./panels/ModelPanel3";
 import MaterialPanel3 from "./panels/MaterialPanel3";
+import { useEffect } from "react";
 
 export default function GuiPanel3({
   texture1,
@@ -24,6 +25,11 @@ export default function GuiPanel3({
   beamVisible,
   setBeamVisible,
 }) {
+  // ✅ beamVisible の変更を監視
+  useEffect(() => {
+    console.log("🔄 [GuiPanel3] beamVisible prop changed:", beamVisible);
+  }, [beamVisible]);
+
   // ✅ LevaトグルUI（onChange にロジック含む）
   useControls("表示切替", {
     "Floor 表示": {
@@ -45,10 +51,15 @@ export default function GuiPanel3({
     ビーム表示: {
       value: beamVisible,
       onChange: (val) => {
-        console.log("🟢 ビーム表示トグル:", val);
+        console.log("🎯 [GuiPanel3] ビーム表示トグル onChange called:", {
+          newValue: val,
+          previousValue: beamVisible,
+          setBeamVisibleFunction: !!setBeamVisible
+        });
         setBeamVisible(val);
+        console.log("✅ [GuiPanel3] setBeamVisible called with:", val);
         if (val) {
-          console.log("🎯 createBeam 発火");
+          console.log("⚡️ [GuiPanel3] createBeam 発火");
           createBeam();
         }
       },

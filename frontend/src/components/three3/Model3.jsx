@@ -12,30 +12,52 @@ export default function Model3({ visible = true, modelRef }) {
   const groupRef = useRef();
 
   useEffect(() => {
-    console.log("🔄 モデルロード完了:", MODEL_URL);
+    if (!scene) {
+      console.warn("🔴 Model3: Scene is not loaded");
+      return;
+    }
 
-    scene.traverse((child) => {
+    console.log("🔄 Model3: モデルロード完了");
+
+    // Clone the scene to avoid sharing materials
+    const clonedScene = scene.clone(true);
+    
+    clonedScene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
 
-        // ⭐ 各マテリアルを clone（オリジナル破壊しないように）
-        child.material = child.material.clone();
-        child.material.needsUpdate = true;
+        // Ensure material is cloned
+        if (child.material) {
+          child.material = child.material.clone();
+          child.material.needsUpdate = true;
+        }
 
-        // Bloom など適用が必要なら以下も調整
-        if (child.name === "Cone_Color_0") {
-          console.log("🎯 Cone_Color_0 検出、emissive 設定");
+        // Set up Cone/Star material
+        if (child.name === "Cone_Color_0" || child.name.includes("Star")) {
+          console.log("🎯 Model3: Found target mesh:", child.name);
           child.material.emissive = new THREE.Color(0xffffff);
           child.material.emissiveIntensity = 20;
         }
       }
     });
 
-    // ✅ モデル全体を渡す（cone だけでなく group 全体）
+    // Add cloned scene to group
+    if (groupRef.current) {
+      // Remove any existing children
+      while (groupRef.current.children.length > 0) {
+        groupRef.current.remove(groupRef.current.children[0]);
+      }
+      groupRef.current.add(clonedScene);
+    }
+
+    // Set up model reference
     if (modelRef) {
       modelRef.current = groupRef.current;
-      console.log("📦 modelRef.current に group を設定:", groupRef.current);
+      console.log("📦 Model3: modelRef.current updated:", {
+        hasRef: !!modelRef.current,
+        childCount: modelRef.current?.children?.length || 0
+      });
     }
   }, [scene, modelRef]);
 
@@ -45,9 +67,9 @@ export default function Model3({ visible = true, modelRef }) {
       visible={visible}
       position={[-140, -2, -38.9]}
       rotation={[0, Math.PI / 2.35, 0]}
-      scale={[5, 5, 5]}
+      scale={5}
     >
-      <primitive object={scene} />
+      {/* Scene will be added via useEffect */}
     </group>
   );
 }

@@ -1,13 +1,13 @@
 // src/components/three3/PostProcessing3.jsx
 
 import { useRef, useMemo, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { createBeamGeometry } from "./Beems/BeamGeometry";
 import { createBeamMaterial } from "./Beems/BeamMaterial";
 import { getColorFromType, getYOffsetFromType } from "./Beems/beamUtils";
 
-const PARTICLE_COUNT = 300_000;
+const PARTICLE_COUNT = 50_000;
 
 export default function BeamEffect({
   type = "green",
@@ -16,83 +16,148 @@ export default function BeamEffect({
   start,
   end,
 }) {
+  const { scene } = useThree();
   const meshRef = useRef();
+  const geometryRef = useRef(null);
+  const materialRef = useRef(null);
+  const hasInitialized = useRef(false);
+  const sceneObjectRef = useRef(null);
 
+  // 🧹 Cleanup function
   useEffect(() => {
-    console.log(`[BeamEffect] 🎯 MOUNT: type=${type}, visible=${visible}`);
-  }, [type, visible]);
+    return () => {
+      // Scene からオブジェクトを削除
+      if (sceneObjectRef.current && scene) {
+        scene.remove(sceneObjectRef.current);
+        console.log(`[BeamEffect:${type}] Scene object removed`);
+      }
+      
+      // リソースを破棄
+      if (geometryRef.current) {
+        geometryRef.current.dispose();
+        geometryRef.current = null;
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+        materialRef.current = null;
+      }
+    };
+  }, [scene, type]);
 
-  if (
-    !visible ||
-    !start ||
-    !end ||
-    !(start instanceof THREE.Vector3) ||
-    !(end instanceof THREE.Vector3) ||
-    start.equals(end)
-  ) {
-    console.warn(`[BeamEffect:${type}] 🚫 無効な start/end → ビーム非表示`);
-    return null;
-  }
+  // 🔍 Props validation
+  useEffect(() => {
+    if (!start || !end) {
+      console.warn(`[BeamEffect:${type}] Invalid props:`, {
+        hasStart: !!start,
+        hasEnd: !!end,
+        visible
+      });
+      return;
+    }
 
-  const color = useMemo(() => {
-    const col = getColorFromType(type);
-    console.log(`[BeamEffect:${type}] 🎨 color =`, col);
-    return col;
-  }, [type]);
+    console.log(`[BeamEffect:${type}] Props updated:`, {
+      type,
+      visible,
+      start: start.toArray(),
+      end: end.toArray(),
+    });
+  }, [type, start, end, visible]);
 
-  const yOffset = useMemo(() => {
-    const y = getYOffsetFromType(type);
-    console.log(`[BeamEffect:${type}] ↕ yOffset =`, y);
-    return y;
-  }, [type]);
-
+  // 🧭 Beam vector calculation
   const beamVector = useMemo(() => {
-    const dir = end.clone().sub(start);
-    const length = dir.length();
-    const normalized = dir.clone().normalize();
-    console.log(`[BeamEffect:${type}] 🧭 direction =`, normalized.toArray());
-    console.log(`[BeamEffect:${type}] 📏 length =`, length.toFixed(3));
-    return { direction: normalized, length };
+    if (!start || !end) return null;
+
+    try {
+      const dir = end.clone().sub(start);
+      const length = dir.length();
+      const normalized = dir.normalize();
+      
+      return { direction: normalized, length };
+    } catch (error) {
+      console.error(`[BeamEffect:${type}] Vector calculation error:`, error);
+      return null;
+    }
   }, [start, end, type]);
 
+  // 🧱 Geometry creation
   const geometry = useMemo(() => {
-    console.log(`[BeamEffect:${type}] 🧱 Generating geometry...`);
-    return createBeamGeometry({
-      direction: beamVector.direction,
-      count: PARTICLE_COUNT,
-      length: beamVector.length,
-    });
-  }, [beamVector.direction, beamVector.length, type]);
+    if (!beamVector) return null;
 
+    try {
+      const geo = createBeamGeometry({
+        direction: beamVector.direction,
+        count: PARTICLE_COUNT,
+        length: beamVector.length,
+      });
+
+      geometryRef.current = geo;
+      return geo;
+    } catch (error) {
+      console.error(`[BeamEffect:${type}] Geometry creation error:`, error);
+      return null;
+    }
+  }, [beamVector, type]);
+
+  // 🎨 Material creation
   const material = useMemo(() => {
-    console.log(`[BeamEffect:${type}] 🧪 Creating material...`);
-    return createBeamMaterial({
-      lengthFactor: beamVector.length,
-      alpha,
-      direction: beamVector.direction,
-      color,
-      yOffset,
-      start,
-    });
-  }, [
-    beamVector.length,
-    beamVector.direction,
-    alpha,
-    color,
-    yOffset,
-    start,
-    type,
-  ]);
+    if (!beamVector || !start) return null;
 
+    try {
+      const mat = createBeamMaterial({
+        lengthFactor: beamVector.length,
+        alpha: Math.min(alpha, 1.0),
+        direction: beamVector.direction,
+        color: getColorFromType(type),
+        yOffset: getYOffsetFromType(type),
+        start,
+      });
+      materialRef.current = mat;
+      return mat;
+    } catch (error) {
+      console.error(`[BeamEffect:${type}] Material creation error:`, error);
+      return null;
+    }
+  }, [beamVector, alpha, type, start]);
+
+  // 🎬 Scene management with StrictMode protection
+  useEffect(() => {
+    if (!geometry || !material || hasInitialized.current) return;
+
+    const points = new THREE.Points(geometry, material);
+    points.name = `BeamEffect_${type}`;
+    meshRef.current = points;
+    sceneObjectRef.current = points;
+    hasInitialized.current = true;
+
+    console.log(`[BeamEffect:${type}] Scene object created:`, points.name);
+  }, [geometry, material, type]);
+
+  // 👁 Visibility management
+  useEffect(() => {
+    if (!sceneObjectRef.current || !scene) return;
+
+    if (visible) {
+      // Remove if already in scene to prevent duplicates
+      scene.remove(sceneObjectRef.current);
+      scene.add(sceneObjectRef.current);
+      console.log(`[BeamEffect:${type}] Added to scene`);
+    } else {
+      scene.remove(sceneObjectRef.current);
+      console.log(`[BeamEffect:${type}] Removed from scene`);
+    }
+
+    return () => {
+      scene.remove(sceneObjectRef.current);
+    };
+  }, [visible, scene, type]);
+
+  // ⏱ Animation frame
   useFrame((state) => {
-    if (material.uniforms?.uTime) {
+    if (material?.uniforms?.uTime) {
       material.uniforms.uTime.value = state.clock.getElapsedTime();
     }
   });
 
-  return (
-    <group position={start}>
-      <points ref={meshRef} geometry={geometry} material={material} />
-    </group>
-  );
+  // 🚫 Don't render JSX (we manage scene objects manually)
+  return null;
 }

@@ -3,15 +3,25 @@
 import * as THREE from "three";
 
 export function getColorFromType(type) {
-  if (type === "green") return new THREE.Color(0x00ff00);
-  if (type === "yellow") return new THREE.Color(0xffff00);
-  if (type === "orange") return new THREE.Color(0xffa500);
-  return new THREE.Color(0xffffff);
+  switch (type) {
+    case "green":
+      return new THREE.Color(0x00ff00);  // 純緑色
+    case "orange":
+      return new THREE.Color(0xffcc00);  // より黄色寄りの色に変更
+    default:
+      console.warn(`[beamUtils] Unknown beam type: ${type}, using default green`);
+      return new THREE.Color(0x00ff00);
+  }
 }
 
 export function getYOffsetFromType(type) {
-  if (type === "green") return 0.0;
-  if (type === "yellow") return 0.2;
-  if (type === "orange") return 0.2;
-  return 0.0;
+  switch (type) {
+    case "green":
+      return 0.0;  // グリーンビームのY軸オフセット
+    case "orange":
+      return -0.2; // オレンジビームのY軸オフセット（少し下に）
+    default:
+      console.warn(`[beamUtils] Unknown beam type: ${type}, using default offset`);
+      return 0.0;
+  }
 }

@@ -7,17 +7,17 @@ import fragmentShader from "@/shaders/fragmentBeam.glsl?raw";
 // タイプ別パラメータ定義
 const beamTypePresets = {
   green: {
-    lengthMultiplier: 1.5,
+    lengthMultiplier: 1.8,
     fadeInSpeed: 0.5,
     alphaCurve: 1.5,
     sizeMultiplier: 1.0,
     blending: THREE.AdditiveBlending,
   },
   orange: {
-    lengthMultiplier: 1.2,
-    fadeInSpeed: 0.7,
-    alphaCurve: 1.3,
-    sizeMultiplier: 1.2,
+    lengthMultiplier: 1.8,
+    fadeInSpeed: 0.8,
+    alphaCurve: 1.2,
+    sizeMultiplier: 1.3,
     blending: THREE.AdditiveBlending,
   },
   default: {

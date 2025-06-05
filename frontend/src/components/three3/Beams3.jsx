@@ -2,10 +2,10 @@
 
 import { useMemo } from "react"
 import * as THREE from "three"
-import useGuiStore from "@/store/useGuiStore"
+import { useBeamStore } from "@/store/useBeamStore"
 
 export default function Beams3({ position = [0, 0, 0], visible }) {
-  const storeVisible = useGuiStore((state) => state.beamVisible)
+  const storeVisible = useBeamStore((state) => state.beamVisible)
   const isVisible = visible ?? storeVisible // ✅ props優先（外部から制御も可能に）
 
   const geometry = useMemo(() => {
