@@ -217,9 +217,9 @@ export default function CanvasRoot3() {
 
     try {
       // グリーンビームのパラメータ調整
-      const direction = new THREE.Vector3(1, 0.1, 0.27)  // Y軸方向を上向きに調整
+      const direction = new THREE.Vector3(1, 0.3, 0.27)  // Y軸方向をさらに10度上向きに
         .normalize()
-        .multiplyScalar(15);  // ビーム長さを1.5倍に
+        .multiplyScalar(30);  // ビーム長さを3倍に（倍増）
       const start = beamStartPos.clone().add(new THREE.Vector3(0, -0.1, 0));
       const end = start.clone().add(direction);
 
@@ -251,7 +251,7 @@ export default function CanvasRoot3() {
       // オレンジビームのパラメータ調整
       const direction = new THREE.Vector3(1, 0.4, 0.26)  // Y軸方向をさらに上向きに
         .normalize()
-        .multiplyScalar(15);  // ビーム長さを1.5倍に
+        .multiplyScalar(30);  // ビーム長さを3倍に（倍増）
       const start = beamStartPos.clone().add(new THREE.Vector3(0, 0.1, 0));
       const end = start.clone().add(direction);
 
@@ -311,14 +311,14 @@ export default function CanvasRoot3() {
             start={greenBeamData.start}
             end={greenBeamData.end}
             visible={beamVisible}
-            alpha={1.0}
+            alpha={1.5}
           />
           <BeamEffect
             type="orange"
             start={orangeBeamData.start}
             end={orangeBeamData.end}
             visible={beamVisible}
-            alpha={1.0}
+            alpha={1.5}
           />
         </>
       )}

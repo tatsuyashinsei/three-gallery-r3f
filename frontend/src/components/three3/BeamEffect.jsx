@@ -10,7 +10,7 @@ import { createBeamGeometry } from "./Beems/BeamGeometry";
 import { createBeamMaterial } from "./Beems/BeamMaterial";
 import { getColorFromType, getYOffsetFromType } from "./Beems/beamUtils";
 
-const PARTICLE_COUNT = 1000;
+const PARTICLE_COUNT = 8000;
 
 export default function BeamEffect({
   type = "green",
@@ -59,9 +59,10 @@ export default function BeamEffect({
       direction: beamVector.direction,
       length: beamVector.length,
       count: PARTICLE_COUNT,
-      lifetimeRange: [0.3, 0.5],
-      birthTimeRange: [0.3, 0.5],
-      useTimeAttributes: true,
+      lifetimeRange: [0.8, 1.2], // 長寿命でより持続的
+      birthTimeRange: [0, 1.0],  // 誕生時間の幅を広げる
+      scaleRange: [0.8, 1.5],    // パーティクルサイズを大きく
+      randomness: 0.15,          // やや拡散を抑える
     });
   }, [beamVector]);
 
