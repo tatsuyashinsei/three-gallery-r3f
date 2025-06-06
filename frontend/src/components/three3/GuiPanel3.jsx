@@ -34,23 +34,23 @@ export default function GuiPanel3({
 
   // ✅ LevaトグルUI（onChange にロジック含む）
   useControls("表示切替", {
-    "Floor 表示": {
+    "ボード表示": {
       value: floorVisible,
       onChange: setFloorVisible,
     },
-    "Model 表示": {
+    "モデル表示": {
       value: modelVisible,
       onChange: setModelVisible,
     },
-    "ボード（表）表示": {
+    "表面表示": {
       value: floor1TextureVisible,
       onChange: setFloor1TextureVisible,
     },
-    "ボード（裏）表示": {
+    "裏面表示": {
       value: floor2TextureVisible,
       onChange: setFloor2TextureVisible,
     },
-    ビーム表示: {
+    "ほうき星": {
       value: beamVisible,
       onChange: (val) => {
         console.log("🎯 [GuiPanel3] ビーム表示トグル onChange called:", {
@@ -71,14 +71,15 @@ export default function GuiPanel3({
   return (
     <>
       <EnvPanel3
+        floor1={floor1}
+        floor2={floor2}
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}
         modelRef={modelRef}
         createBeam={createBeam}
         loadHDR={loadHDR}
-        floor1TextureVisible={floor1TextureVisible}
-        floor2TextureVisible={floor2TextureVisible}
+        testLight={testLight}
       />
       <ModelPanel3 modelRef={modelRef} testLight={testLight} />
       <MaterialPanel3 floor1={floor1} floor2={floor2} />

@@ -23,10 +23,13 @@ const Floor3 = forwardRef(({
     "https://cdn.jsdelivr.net/gh/threejsconf/pngAsTexture@main/NishiokaAndSakura2.jpg"
   );
 
-  // refの設定
+  // refの設定（オブジェクトとして両方のrefを渡す）
   useEffect(() => {
     if (ref) {
-      ref.current = floorRef.current;
+      ref.current = {
+        front: floorRef.current,
+        back: floorBackRef.current
+      };
     }
   }, [ref]);
 

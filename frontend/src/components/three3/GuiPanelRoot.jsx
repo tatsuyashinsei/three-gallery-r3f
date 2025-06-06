@@ -12,7 +12,7 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
 
   // 表示制御
   const [modelVisible, setModelVisible] = useState(true);
-  const [floorVisible, setFloorVisible] = useState(true);
+  const [floorVisible, setFloorVisible] = useState(false);
   const [floor1TextureVisible, setFloor1TextureVisible] = useState(false);
   const [floor2TextureVisible, setFloor2TextureVisible] = useState(false);
 
@@ -63,6 +63,8 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
           textureVisible1={floor1TextureVisible}
           textureVisible2={floor2TextureVisible}
           ref={floor1Ref}
+          position={[-133, -11, -36.65]}
+          rotation={[0, -Math.PI / 1.69, 0]}
         />
       </Suspense>
 

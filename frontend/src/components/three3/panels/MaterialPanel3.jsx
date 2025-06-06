@@ -13,7 +13,7 @@ export default function MaterialPanel3({ floor1, floor2 }) {
     transmission,
     thickness,
     ior,
-  } = useControls("Floor Material", {
+  } = useControls("ボード設定", {
     rotationY: {
       value: 0,
       min: -8.154,
@@ -39,14 +39,22 @@ export default function MaterialPanel3({ floor1, floor2 }) {
   });
 
   useEffect(() => {
-    const meshes = [floor1?.current, floor2?.current];
+    // 表と裏のメッシュを取得
+    const meshes = [
+      floor1?.current?.front,
+      floor1?.current?.back,
+      floor2?.current?.front,
+      floor2?.current?.back
+    ].filter(Boolean);
+
     meshes.forEach((mesh) => {
       if (!mesh || !mesh.material) {
         console.warn('Mesh or material not found:', { mesh });
         return;
       }
 
-      console.log('Updating material properties:', {
+      console.log('Updating material properties for mesh:', {
+        mesh,
         rotationY,
         metalness,
         roughness

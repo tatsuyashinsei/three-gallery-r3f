@@ -26,8 +26,8 @@ export default function EnvPanel3({
   const { isLoadingHDR } = useGuiStore();
 
   const {
-    environment,
-    background,
+    "環境表示": environment,
+    "背景表示": background,
     floor1TextureVisible,
     floor2TextureVisible,
     beamVisible,

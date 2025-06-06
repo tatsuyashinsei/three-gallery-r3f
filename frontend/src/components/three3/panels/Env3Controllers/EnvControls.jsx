@@ -13,18 +13,27 @@ const envMapList = {
 };
 
 export function useEnvControls() {
-  return useControls("環境設定", {
-    environment: true,
-    background: true,
-    floor1TextureVisible: false,
-    floor2TextureVisible: false,
-    beamVisible: false,
+  const controls = useControls("環境設定", {
+    "環境表示": {
+      value: true,
+    },
+    "背景表示": {
+      value: true,
+    },
     envMap: {
       options: Object.keys(envMapList),
       value: "選択してくださいーー",
       label: "背景を選択",
     },
   });
+
+  // 非表示のコントロールの状態を維持
+  return {
+    ...controls,
+    floor1TextureVisible: false,
+    floor2TextureVisible: false,
+    beamVisible: false,
+  };
 }
 
 export { envMapList };

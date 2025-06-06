@@ -8,17 +8,21 @@ export default function ModelPanel3({ modelRef }) {
   const materialRefs = useRef([]);
 
   const controls = useControls("モデル設定", {
-    rotationY: { value: Math.PI / 2.35, min: 0, max: Math.PI * 2, step: 0.01, label: "Y軸回転" },
-    emissiveIntensity: { value: 7, min: 0, max: 15 },
-    roughness: { value: 0.1, min: 0, max: 1 },
-    metalness: { value: 0.7, min: 0, max: 1 },
-    envMapIntensity: { value: 2.5, min: 0, max: 5 },
-    clearcoat: { value: 0.8, min: 0, max: 1 },
-    iridescence: { value: 0.0, min: 0, max: 1 },
-    transmission: { value: 0.0, min: 0, max: 1 },
-    thickness: { value: 1.0, min: 0, max: 10 },
-    ior: { value: 1.5, min: 1, max: 2.5 },
-    opacity: { value: 1.0, min: 0, max: 1 },
+    "⭐ おすすめ設定": {
+      value: "目の粗さ：0.1  金属性：1.0",
+      editable: false,
+    },
+    rotationY: { value: Math.PI / 2.35, min: 0, max: Math.PI * 2, step: 0.01, label: "横回転" },
+    emissiveIntensity: { value: 7, min: 0, max: 15, label: "発光強度" },
+    roughness: { value: 0.1, min: 0, max: 1, label: "目の粗さ" },
+    metalness: { value: 0.7, min: 0, max: 1, label: "金属性" },
+    envMapIntensity: { value: 2.5, min: 0, max: 5, label: "環境強度" },
+    clearcoat: { value: 0.8, min: 0, max: 1, label: "クリアコート" },
+    iridescence: { value: 0.0, min: 0, max: 1, label: "玉虫色" },
+    transmission: { value: 0.0, min: 0, max: 1, label: "透過率" },
+    thickness: { value: 1.0, min: 0, max: 10, label: "厚み" },
+    ior: { value: 1.5, min: 1, max: 2.5, label: "屈折率" },
+    opacity: { value: 1.0, min: 0, max: 1, label: "不透明度" },
   });
 
   useEffect(() => {
