@@ -1,9 +1,8 @@
 // src/components/three3/GuiPanelRoot.jsx
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 
-import Model3 from "./Model3";
 import Floor3 from "./Floor3";
 import GuiPanel3 from "./GuiPanel3";
 import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
@@ -37,10 +36,16 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
     }
   };
 
+  // モデルの表示状態を更新
+  useEffect(() => {
+    if (modelRef?.current) {
+      modelRef.current.visible = modelVisible;
+    }
+  }, [modelRef, modelVisible]);
+
   return (
     <>
       <Suspense fallback={null}>
-        <Model3 visible={modelVisible} modelRef={modelRef} />
         <Floor3
           visible={floorVisible}
           textureVisible1={floor1TextureVisible}

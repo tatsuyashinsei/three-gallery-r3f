@@ -7,26 +7,26 @@ import * as THREE from "three";
 const MODEL_URL =
   "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb";
 
-export default function Model3({ visible = true, modelRef }) {
-  // ① useGLTF() の戻り値は毎回 clone して使う
+export default function Model3({ visible = true, modelRef, onLoad }) {
   const { scene: src } = useGLTF(MODEL_URL);
+  const groupRef = useRef();
+
+  // モデルのクローンを作成
   const model = useMemo(() => {
     if (!src) return null;
     console.log("📦 [Model3] Creating clone(true) - complete instance separation");
-    const clone = src.clone(true); // インスタンス完全分離
+    const clone = src.clone(true);
     
     clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
 
-        // Ensure material is cloned
         if (child.material) {
           child.material = child.material.clone();
           child.material.needsUpdate = true;
         }
 
-        // Set up Cone/Star material
         if (child.name === "Cone_Color_0" || child.name.includes("Star")) {
           console.log("🎯 Model3: Found target mesh:", child.name);
           child.material.emissive = new THREE.Color(0xffffff);
@@ -38,37 +38,37 @@ export default function Model3({ visible = true, modelRef }) {
     return clone;
   }, [src]);
 
-  const groupRef = useRef();
-
-  // ② add 前に "二重マウントガード"
-  const once = useRef(false);
+  // モデルの初期化と参照の設定
   useEffect(() => {
-    if (once.current) return; // 2回目を無視
-    once.current = true;
-
     if (!model || !groupRef.current) return;
 
-    console.count('addMascot'); // 確認ポイント: ページリロードごとに1だけ増える
-    console.log("✅ [Model3] Adding model to group (once only)");
+    // groupRefにモデルを追加
+    if (!groupRef.current.children.includes(model)) {
+      console.log("✅ [Model3] Adding model to group");
+      groupRef.current.add(model);
+    }
 
-    groupRef.current.add(model);
-
-    // Set up model reference
+    // modelRefの更新
     if (modelRef) {
       modelRef.current = groupRef.current;
-      console.log("📦 Model3: modelRef.current updated:", {
+      console.log("📦 [Model3] modelRef updated:", {
         hasRef: !!modelRef.current,
-        childCount: modelRef.current?.children?.length || 0
+        childCount: modelRef.current?.children?.length || 0,
+        position: modelRef.current?.position.toArray(),
+        rotation: modelRef.current?.rotation.toArray()
       });
     }
 
-    // ③ dispose は "共有されていない" と確認後に実行
+    // onLoad コールバックの呼び出し
+    if (onLoad) {
+      onLoad(groupRef.current);
+    }
+
     return () => {
-      console.log("🧹 [Model3] Cleanup - remove only, safe dispose");
+      console.log("🧹 [Model3] Cleanup");
       if (groupRef.current && model) {
         groupRef.current.remove(model);
         
-        // 安全な dispose: parent === null を確認してから
         if (model.parent === null) {
           model.traverse((child) => {
             if (child.isMesh) {
@@ -88,7 +88,7 @@ export default function Model3({ visible = true, modelRef }) {
         modelRef.current = null;
       }
     };
-  }, [model, modelRef]);
+  }, [model, modelRef, onLoad]);
 
   return (
     <group
@@ -97,11 +97,8 @@ export default function Model3({ visible = true, modelRef }) {
       position={[-140, -2, -38.9]}
       rotation={[0, Math.PI / 2.35, 0]}
       scale={5}
-    >
-      {/* Scene will be added via useEffect */}
-    </group>
+    />
   );
 }
 
-// drei のプリロード
 useGLTF.preload(MODEL_URL);

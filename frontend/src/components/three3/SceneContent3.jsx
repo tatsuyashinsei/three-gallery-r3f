@@ -10,15 +10,26 @@ export default function SceneContent3({ onSceneReady, modelRef }) {
 
   useEffect(() => {
     if (onSceneReady && scene) {
-      console.log("[SceneContent3] ✅ シーンが準備完了");
+      console.log("[SceneContent3] ✅ シーンが準備完了", {
+        hasModelRef: !!modelRef?.current,
+        scene: scene
+      });
       onSceneReady(scene);
     }
-  }, [onSceneReady, scene]);
+  }, [onSceneReady, scene, modelRef]);
 
   return (
     <>
       <OrbitControls enableDamping makeDefault />
-      <Model3 modelRef={modelRef} />
+      <Model3 
+        modelRef={modelRef} 
+        onLoad={(model) => {
+          console.log("[SceneContent3] ✅ モデルの初期化完了", {
+            model: model,
+            ref: modelRef?.current
+          });
+        }}
+      />
     </>
   );
 }

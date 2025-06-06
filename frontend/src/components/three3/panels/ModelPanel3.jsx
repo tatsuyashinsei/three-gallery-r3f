@@ -8,6 +8,7 @@ export default function ModelPanel3({ modelRef }) {
   const materialRefs = useRef([]);
 
   const controls = useControls("モデル設定", {
+    rotationY: { value: Math.PI / 2.35, min: 0, max: Math.PI * 2, step: 0.01, label: "Y軸回転" },
     emissiveIntensity: { value: 7, min: 0, max: 15 },
     roughness: { value: 0.1, min: 0, max: 1 },
     metalness: { value: 0.7, min: 0, max: 1 },
@@ -37,6 +38,9 @@ export default function ModelPanel3({ modelRef }) {
         return;
       }
 
+      // Y軸回転の初期設定
+      current.rotation.y = controls.rotationY;
+
       const collected = [];
       current.traverse((child) => {
         if (child.isMesh && child.material) {
@@ -58,7 +62,14 @@ export default function ModelPanel3({ modelRef }) {
     }
 
     trySetup();
-  }, [modelRef]);
+  }, [modelRef, controls.rotationY]);
+
+  // Y軸回転の更新
+  useEffect(() => {
+    if (modelRef?.current) {
+      modelRef.current.rotation.y = controls.rotationY;
+    }
+  }, [modelRef, controls.rotationY]);
 
   // フレーム毎に emissiveIntensity をイーズインで更新
   useFrame(() => {
