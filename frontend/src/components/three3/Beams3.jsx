@@ -1,14 +1,5 @@
 // src/components/three3/Beams3.jsx
 
-<<<<<<< HEAD
-import { useMemo } from "react"
-import * as THREE from "three"
-import { useBeamStore } from "@/store/useBeamStore"
-
-export default function Beams3({ position = [0, 0, 0], visible }) {
-  const storeVisible = useBeamStore((state) => state.beamVisible)
-  const isVisible = visible ?? storeVisible // ✅ props優先（外部から制御も可能に）
-=======
 import { useMemo } from "react";
 import * as THREE from "three";
 import useGuiStore from "@/store/useGuiStore";
@@ -16,7 +7,6 @@ import useGuiStore from "@/store/useGuiStore";
 export default function Beams3({ position = [0, 0, 0], visible: propVisible }) {
   // Zustandからビーム表示状態を取得（fallback用）
   const storeVisible = useGuiStore((state) => state.beamVisible);
->>>>>>> 338a77370d23e233cc2c2059ff2b3e3f564322b4
 
   // 明示的に渡された visible を優先
   const isVisible = propVisible !== undefined ? propVisible : storeVisible;

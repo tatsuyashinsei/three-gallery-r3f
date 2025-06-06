@@ -1,28 +1,21 @@
 // src/components/three3/Model3.jsx
 
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
 
 const MODEL_URL =
   "https://cdn.jsdelivr.net/gh/threejsconf/gltf@main/IchibanboshiModeling5comp.glb";
 
 export default function Model3({ visible = true, modelRef }) {
-  const { scene } = useGLTF(MODEL_URL);
-  const groupRef = useRef();
-
-  useEffect(() => {
-    if (!scene) {
-      console.warn("🔴 Model3: Scene is not loaded");
-      return;
-    }
-
-    console.log("🔄 Model3: モデルロード完了");
-
-    // Clone the scene to avoid sharing materials
-    const clonedScene = scene.clone(true);
+  // ① useGLTF() の戻り値は毎回 clone して使う
+  const { scene: src } = useGLTF(MODEL_URL);
+  const model = useMemo(() => {
+    if (!src) return null;
+    console.log("📦 [Model3] Creating clone(true) - complete instance separation");
+    const clone = src.clone(true); // インスタンス完全分離
     
-    clonedScene.traverse((child) => {
+    clone.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
@@ -42,14 +35,23 @@ export default function Model3({ visible = true, modelRef }) {
       }
     });
 
-    // Add cloned scene to group
-    if (groupRef.current) {
-      // Remove any existing children
-      while (groupRef.current.children.length > 0) {
-        groupRef.current.remove(groupRef.current.children[0]);
-      }
-      groupRef.current.add(clonedScene);
-    }
+    return clone;
+  }, [src]);
+
+  const groupRef = useRef();
+
+  // ② add 前に "二重マウントガード"
+  const once = useRef(false);
+  useEffect(() => {
+    if (once.current) return; // 2回目を無視
+    once.current = true;
+
+    if (!model || !groupRef.current) return;
+
+    console.count('addMascot'); // 確認ポイント: ページリロードごとに1だけ増える
+    console.log("✅ [Model3] Adding model to group (once only)");
+
+    groupRef.current.add(model);
 
     // Set up model reference
     if (modelRef) {
@@ -59,7 +61,34 @@ export default function Model3({ visible = true, modelRef }) {
         childCount: modelRef.current?.children?.length || 0
       });
     }
-  }, [scene, modelRef]);
+
+    // ③ dispose は "共有されていない" と確認後に実行
+    return () => {
+      console.log("🧹 [Model3] Cleanup - remove only, safe dispose");
+      if (groupRef.current && model) {
+        groupRef.current.remove(model);
+        
+        // 安全な dispose: parent === null を確認してから
+        if (model.parent === null) {
+          model.traverse((child) => {
+            if (child.isMesh) {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach(mat => mat.dispose());
+                } else {
+                  child.material.dispose();
+                }
+              }
+            }
+          });
+        }
+      }
+      if (modelRef) {
+        modelRef.current = null;
+      }
+    };
+  }, [model, modelRef]);
 
   return (
     <group
@@ -73,3 +102,6 @@ export default function Model3({ visible = true, modelRef }) {
     </group>
   );
 }
+
+// drei のプリロード
+useGLTF.preload(MODEL_URL);
