@@ -12,6 +12,9 @@ const beamTypePresets = {
     alphaCurve: 1.5,
     sizeMultiplier: 1.0,
     blending: THREE.AdditiveBlending,
+    emissionStrength: 2.2,  // 発光をさらに強く
+    mixColor: new THREE.Color(0.3, 0.7, 0.2),  // さらに暗い緑色
+    mixRatio: 0.35,  // ミックス率を上げて発光色の影響を強く
   },
   orange: {
     lengthMultiplier: 1.8,
@@ -19,6 +22,9 @@ const beamTypePresets = {
     alphaCurve: 1.2,
     sizeMultiplier: 1.3,
     blending: THREE.AdditiveBlending,
+    emissionStrength: 2.2,  // 発光をさらに強く
+    mixColor: new THREE.Color(0.7, 0.5, 0.1),  // さらに暗いオレンジ色
+    mixRatio: 0.35,  // ミックス率を上げて発光色の影響を強く
   },
   default: {
     lengthMultiplier: 1.0,
@@ -26,6 +32,9 @@ const beamTypePresets = {
     alphaCurve: 1.4,
     sizeMultiplier: 1.0,
     blending: THREE.AdditiveBlending,
+    emissionStrength: 2.0,  // 発光をさらに強く
+    mixColor: new THREE.Color(0.7, 0.7, 0.4),  // さらに暗いクリーム色
+    mixRatio: 0.35,  // ミックス率を上げて発光色の影響を強く
   },
 };
 
@@ -56,6 +65,9 @@ export function createBeamMaterial({
       uYOffset: { value: yOffset },
       uFadeInSpeed: { value: preset.fadeInSpeed },
       uAlphaCurve: { value: preset.alphaCurve },
+      uEmissionStrength: { value: preset.emissionStrength },
+      uMixColor: { value: preset.mixColor },
+      uMixRatio: { value: preset.mixRatio },
     },
   });
 }
