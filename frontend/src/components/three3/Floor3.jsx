@@ -2,16 +2,17 @@
 
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 
-export default function Floor3({
+const Floor3 = forwardRef(({
   visible = true,
   textureVisible1 = true,
   textureVisible2 = true,
   position = [-133, -11, -36.65], // モデル位置(-140, -2, -38.9)を基準に調整
   rotation = [0, -Math.PI / 1.69, 0], // 回転値を統一
-}) {
+}, ref) => {
+  const groupRef = useRef();
   const floorRef = useRef();
   const floorBackRef = useRef();
 
@@ -21,6 +22,23 @@ export default function Floor3({
   const tex2 = useTexture(
     "https://cdn.jsdelivr.net/gh/threejsconf/pngAsTexture@main/NishiokaAndSakura2.jpg"
   );
+
+  // refの設定
+  useEffect(() => {
+    if (ref) {
+      ref.current = floorRef.current;
+    }
+  }, [ref]);
+
+  // 回転の更新を監視
+  useEffect(() => {
+    if (floorRef.current) {
+      floorRef.current.rotation.set(...rotation);
+      if (floorBackRef.current) {
+        floorBackRef.current.rotation.copy(floorRef.current.rotation);
+      }
+    }
+  }, [rotation]);
 
   // テクスチャの初期設定
   useEffect(() => {
@@ -54,7 +72,7 @@ export default function Floor3({
   });
 
   return (
-    <group visible={visible}>
+    <group ref={groupRef} visible={visible}>
       {/* 表 */}
       <mesh ref={floorRef} position={position} rotation={rotation}>
         <planeGeometry args={[25, 25]} />
@@ -62,6 +80,12 @@ export default function Floor3({
           side={THREE.FrontSide}
           transparent={true}
           map={textureVisible1 ? tex1 : null}
+          metalness={0.5}
+          roughness={0.5}
+          envMapIntensity={1.0}
+          clearcoat={0.0}
+          transmission={0.0}
+          ior={1.5}
         />
       </mesh>
 
@@ -72,11 +96,20 @@ export default function Floor3({
           side={THREE.BackSide}
           transparent={true}
           map={textureVisible2 ? tex2 : null}
+          metalness={0.5}
+          roughness={0.5}
+          envMapIntensity={1.0}
+          clearcoat={0.0}
+          transmission={0.0}
+          ior={1.5}
         />
       </mesh>
     </group>
   );
-}
+});
+
+Floor3.displayName = 'Floor3';
+export default Floor3;
 
 
 

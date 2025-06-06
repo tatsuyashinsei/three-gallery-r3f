@@ -39,9 +39,18 @@ export default function MaterialPanel3({ floor1, floor2 }) {
   });
 
   useEffect(() => {
-    const meshes = [floor1, floor2];
+    const meshes = [floor1?.current, floor2?.current];
     meshes.forEach((mesh) => {
-      if (!mesh || !mesh.material) return;
+      if (!mesh || !mesh.material) {
+        console.warn('Mesh or material not found:', { mesh });
+        return;
+      }
+
+      console.log('Updating material properties:', {
+        rotationY,
+        metalness,
+        roughness
+      });
 
       mesh.rotation.y = rotationY;
       mesh.position.y = positionY;

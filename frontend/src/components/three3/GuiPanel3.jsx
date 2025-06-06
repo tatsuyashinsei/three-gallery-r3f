@@ -7,6 +7,8 @@ import MaterialPanel3 from "./panels/MaterialPanel3";
 import { useEffect } from "react";
 
 export default function GuiPanel3({
+  floor1,
+  floor2,
   texture1,
   texture2,
   environmentTexture,
@@ -79,7 +81,7 @@ export default function GuiPanel3({
         floor2TextureVisible={floor2TextureVisible}
       />
       <ModelPanel3 modelRef={modelRef} testLight={testLight} />
-      <MaterialPanel3 />
+      <MaterialPanel3 floor1={floor1} floor2={floor2} />
     </>
   );
 }
