@@ -17,15 +17,27 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
   const [floor2TextureVisible, setFloor2TextureVisible] = useState(false);
 
   const testLight = useRef();
+  const floor1Ref = useRef();
+  const floor2Ref = useRef();
 
-  const texture1 = useMemo(
-    () => new THREE.TextureLoader().load("/tex1.jpg"),
-    []
-  );
-  const texture2 = useMemo(
-    () => new THREE.TextureLoader().load("/tex2.jpg"),
-    []
-  );
+  // テクスチャの読み込み
+  const texture1 = useMemo(() => {
+    const tex = new THREE.TextureLoader().load(
+      "https://cdn.jsdelivr.net/gh/threejsconf/pngAsTexture@main/YakinikuIchiban.jpg"
+    );
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, []);
+
+  const texture2 = useMemo(() => {
+    const tex = new THREE.TextureLoader().load(
+      "https://cdn.jsdelivr.net/gh/threejsconf/pngAsTexture@main/NishiokaAndSakura2.jpg"
+    );
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.repeat.x = -1;
+    return tex;
+  }, []);
 
   const handleLoadJPG = async (url) => {
     try {
@@ -50,12 +62,13 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
           visible={floorVisible}
           textureVisible1={floor1TextureVisible}
           textureVisible2={floor2TextureVisible}
+          ref={floor1Ref}
         />
       </Suspense>
 
       <GuiPanel3
-        floor1={null}
-        floor2={null}
+        floor1={floor1Ref}
+        floor2={floor2Ref}
         texture1={texture1}
         texture2={texture2}
         environmentTexture={environmentTexture}

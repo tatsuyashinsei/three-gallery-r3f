@@ -22,14 +22,27 @@ export default function Floor3({
     "https://cdn.jsdelivr.net/gh/threejsconf/pngAsTexture@main/NishiokaAndSakura2.jpg"
   );
 
+  // テクスチャの初期設定
   useEffect(() => {
     tex1.colorSpace = THREE.SRGBColorSpace;
     tex2.colorSpace = THREE.SRGBColorSpace;
     tex2.wrapS = THREE.RepeatWrapping;
     tex2.wrapT = THREE.RepeatWrapping;
     tex2.repeat.x = -1;
-    tex2.center.set(0.5, 0.5); // 中心から反転する指定（必須！）
+    tex2.center.set(0.5, 0.5);
   }, [tex1, tex2]);
+
+  // テクスチャの表示/非表示を制御
+  useEffect(() => {
+    if (floorRef.current?.material) {
+      floorRef.current.material.map = textureVisible1 ? tex1 : null;
+      floorRef.current.material.needsUpdate = true;
+    }
+    if (floorBackRef.current?.material) {
+      floorBackRef.current.material.map = textureVisible2 ? tex2 : null;
+      floorBackRef.current.material.needsUpdate = true;
+    }
+  }, [textureVisible1, textureVisible2, tex1, tex2]);
 
   // 裏メッシュを毎フレーム追従させる
   useFrame(() => {
@@ -45,15 +58,20 @@ export default function Floor3({
       {/* 表 */}
       <mesh ref={floorRef} position={position} rotation={rotation}>
         <planeGeometry args={[25, 25]} />
-        <meshPhysicalMaterial map={textureVisible1 ? tex1 : null} />
+        <meshPhysicalMaterial
+          side={THREE.FrontSide}
+          transparent={true}
+          map={textureVisible1 ? tex1 : null}
+        />
       </mesh>
 
       {/* 裏 */}
       <mesh ref={floorBackRef}>
         <planeGeometry args={[25, 25]} />
         <meshPhysicalMaterial
-          map={textureVisible2 ? tex2 : null}
           side={THREE.BackSide}
+          transparent={true}
+          map={textureVisible2 ? tex2 : null}
         />
       </mesh>
     </group>
