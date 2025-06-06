@@ -362,7 +362,7 @@ const GalleryCanvas3 = () => {
         floor1.position
           .copy(model.position)
           .add(new THREE.Vector3(7, -9, 2.25));
-        floor1.rotation.set(0, -Math.PI / 1.7025, 0);
+        floor1.rotation.set(0, -Math.PI / 1.69, 0);
         floor2.position.copy(floor1.position);
         floor2.rotation.copy(floor1.rotation);
         floor1.scale.setScalar(4);

@@ -9,8 +9,8 @@ export default function Floor3({
   visible = true,
   textureVisible1 = true,
   textureVisible2 = true,
-  position = [-138, -12, -38.3], // XYZ位置
-  rotation = [0, -Math.PI / 1.7, 0], // XYZ回転（初期はX軸に-90度）
+  position = [-133, -11, -36.65], // モデル位置(-140, -2, -38.9)を基準に調整
+  rotation = [0, -Math.PI / 1.69, 0], // 回転値を統一
 }) {
   const floorRef = useRef();
   const floorBackRef = useRef();
