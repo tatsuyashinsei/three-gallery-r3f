@@ -11,22 +11,99 @@ import { fetchInstagramPosts } from '../api/instagram';
 
 const RotatingCube = () => {
   const meshRef = useRef();
+  const [scrollY, setScrollY] = useState(0);
+  const [randomOffset, setRandomOffset] = useState({ x: 0, y: 0, z: 0 });
   const texture = useTexture("https://res.cloudinary.com/dxcotqkhe/image/upload/v1747605770/S__4071451_dqr3ei.jpg");
   
   // テクスチャの設定
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(1, 1);
+
+  // スクロールイベントのリスニング
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      
+      // スクロールごとにランダムなオフセットを生成（確率的に）
+      if (Math.random() < 0.1) { // 10%の確率で新しいランダム値を設定
+        setRandomOffset({
+          x: (Math.random() - 0.5) * 4, // -2 から 2 の範囲
+          y: (Math.random() - 0.5) * 3, // -1.5 から 1.5 の範囲
+          z: (Math.random() - 0.5) * 6  // -3 から 3 の範囲
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // アニメーション
   useFrame((state, delta) => {
+    if (!meshRef.current) return;
+
+    // 基本的な回転
     meshRef.current.rotation.x += delta * 0.2;
     meshRef.current.rotation.y += delta * 0.3;
+    meshRef.current.rotation.z += delta * 0.1;
+
+    // スクロールに基づく動的な変化
+    const scrollProgress = scrollY * 0.001; // スクロール進行度
+    const time = state.clock.elapsedTime;
+
+    // 位置の動的変化（スクロール + ランダム + 時間ベース）
+    const baseX = Math.sin(time * 0.5) * 2 + randomOffset.x;
+    const baseY = Math.cos(time * 0.3) * 1.5 + randomOffset.y;
+    const baseZ = -5 + Math.sin(scrollProgress * 2) * 2 + randomOffset.z;
+
+    // スクロールに応じた左右の移動
+    const lateralMovement = Math.sin(scrollProgress * 3) * 3;
+    
+    meshRef.current.position.set(
+      baseX + lateralMovement,
+      baseY + Math.sin(scrollProgress * 4) * 2,
+      baseZ
+    );
+
+    // スケールの動的変化
+    const scaleBase = 2;
+    const scaleVariation = Math.sin(time * 0.8) * 0.5 + Math.cos(scrollProgress * 5) * 0.8;
+    const randomScale = 1 + (Math.sin(time * 2.3) * 0.3);
+    meshRef.current.scale.setScalar(scaleBase + scaleVariation * randomScale);
+
+    // カメラの動的な位置変更
+    if (state.camera) {
+      // スクロールに応じてカメラを移動
+      const cameraX = Math.sin(scrollProgress * 1.5) * 2;
+      const cameraY = Math.cos(scrollProgress * 1.2) * 1.5;
+      const cameraZ = 5 + Math.sin(scrollProgress * 2) * 2;
+      
+      state.camera.position.set(cameraX, cameraY, cameraZ);
+      
+      // カメラの回転（キューブを追従）
+      const targetX = meshRef.current.position.x;
+      const targetY = meshRef.current.position.y;
+      const targetZ = meshRef.current.position.z;
+      
+      state.camera.lookAt(targetX, targetY, targetZ);
+    }
+
+    // 透明度の変化（深度に応じて）
+    if (meshRef.current.material) {
+      const opacity = Math.max(0.3, Math.min(1.0, 1.0 - Math.abs(baseZ + 5) * 0.1));
+      meshRef.current.material.opacity = opacity;
+      meshRef.current.material.transparent = true;
+    }
   });
 
   return (
     <mesh ref={meshRef} position={[0, 0, -5]} scale={2}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial 
+        map={texture} 
+        transparent={true}
+        opacity={0.8}
+      />
     </mesh>
   );
 };
@@ -976,6 +1053,138 @@ const AboutPage = () => {
               メインページに戻る
             </Link>
           </motion.div>
+
+          {/* 事業所案内ヘッダーセクション */}
+          <div className="mt-20 mb-32 relative">
+            {/* 装飾的な星のライン上部 */}
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-yellow-400/60 to-transparent"></div>
+            
+            <div className="container mx-auto px-4">
+              <div className="text-center relative">
+                {/* 背景の帯 */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-gradient-to-r from-transparent via-gray-800/80 to-transparent backdrop-blur-sm h-20 w-full max-w-md rounded-full border border-yellow-400/30"></div>
+                </div>
+                
+                {/* メインコンテンツ */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 100 }}
+                  className="relative z-10 py-8"
+                >
+                  <div className="inline-flex items-center gap-4 mb-4">
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                      }}
+                    >
+                      <Star className="w-10 h-10 text-yellow-400 filter drop-shadow-lg" />
+                    </motion.div>
+                    
+                    <motion.h1 
+                      className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200"
+                      animate={{ 
+                        backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
+                      }}
+                      transition={{ 
+                        duration: 3, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                      style={{ 
+                        backgroundSize: "200% 200%",
+                        textShadow: "0 0 20px rgba(250, 204, 21, 0.5)"
+                      }}
+                    >
+                      事業所案内
+                    </motion.h1>
+                    
+                    <motion.div
+                      animate={{ 
+                        rotate: [360, 0],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                        scale: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }
+                      }}
+                    >
+                      <Star className="w-10 h-10 text-yellow-400 filter drop-shadow-lg" />
+                    </motion.div>
+                  </div>
+                  
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 1 }}
+                    className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed"
+                  >
+                    一人一人の輝きを大切に、共に歩む支援を目指しています
+                  </motion.p>
+                  
+                  {/* 装飾的な小さな星 */}
+                  <div className="absolute -top-4 left-1/4">
+                    <motion.div
+                      animate={{ 
+                        y: [0, -10, 0],
+                        opacity: [0.5, 1, 0.5]
+                      }}
+                      transition={{ 
+                        duration: 3, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                    >
+                      <Star className="w-4 h-4 text-yellow-300" />
+                    </motion.div>
+                  </div>
+                  
+                  <div className="absolute -bottom-4 right-1/4">
+                    <motion.div
+                      animate={{ 
+                        y: [0, -8, 0],
+                        opacity: [0.5, 1, 0.5]
+                      }}
+                      transition={{ 
+                        duration: 4, 
+                        repeat: Infinity, 
+                        ease: "easeInOut",
+                        delay: 1.5
+                      }}
+                    >
+                      <Star className="w-3 h-3 text-yellow-300" />
+                    </motion.div>
+                  </div>
+                  
+                  <div className="absolute top-8 right-1/3">
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 180, 360],
+                        scale: [0.8, 1.2, 0.8]
+                      }}
+                      transition={{ 
+                        duration: 5, 
+                        repeat: Infinity, 
+                        ease: "easeInOut",
+                        delay: 0.8
+                      }}
+                    >
+                      <Star className="w-2 h-2 text-yellow-200" />
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+            
+            {/* 装飾的な星のライン下部 */}
+            <div className="absolute left-0 right-0 bottom-0 h-px bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent"></div>
+          </div>
           
           {/* 代表あいさつ */}
           <ScrollRevealSection

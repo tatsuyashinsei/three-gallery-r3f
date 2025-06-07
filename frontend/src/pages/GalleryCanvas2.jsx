@@ -7,7 +7,6 @@ import AkaiTorii from "../components/AkaiTorii";
 import PictureWall from "../components/PictureWall";
 import { Leva, useControls } from "leva";
 import LensflareComponent from "../components/Lensflare";
-// import TheSun from "../components/TheSun";
 
 const SceneContent = () => {
   const { camera, gl } = useThree();
@@ -18,9 +17,32 @@ const SceneContent = () => {
   const cameraTarget = useRef(new THREE.Vector3(0, 1, 0));
   const floorRef = useRef();
   const cumulativeEuler = useRef(new THREE.Euler(0, 0, 0));
+  const timeRef = useRef(0);
+  const cameraOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
+  const randomTargetRef = useRef(new THREE.Vector3(0, 0, 0));
+  const lastChangeTimeRef = useRef(0);
+  
+  // スクロール関連の状態
+  const scrollRef = useRef(0);
+  const isLookAtActiveRef = useRef(true);
+  const cameraSwayRef = useRef(new THREE.Vector3(0, 0, 0));
+  const originalCameraPositionRef = useRef(new THREE.Vector3());
 
   // 🎛️ Leva コントロール
-  const { moveSpeed, rotationSpeed, cubeColor, restitution } = useControls({
+  const { 
+    moveSpeed, 
+    rotationSpeed, 
+    cubeColor, 
+    restitution, 
+    swayAmount, 
+    swaySpeed,
+    cameraOffsetRange,
+    cameraChangeInterval,
+    cameraLagSpeed,
+    scrollSensitivity,
+    cameraSwayAmount,
+    lookAtToggleThreshold
+  } = useControls({
     moveSpeed: {
       value: 0.05,
       min: 0.01,
@@ -35,11 +57,80 @@ const SceneContent = () => {
       step: 0.001,
       label: "回転スピード",
     },
+    swayAmount: {
+      value: 0.5,
+      min: 0,
+      max: 2,
+      step: 0.1,
+      label: "揺れ幅",
+    },
+    swaySpeed: {
+      value: 1,
+      min: 0.1,
+      max: 5,
+      step: 0.1,
+      label: "揺れスピード",
+    },
+    cameraOffsetRange: {
+      value: 4,
+      min: 0,
+      max: 15,
+      step: 0.5,
+      label: "カメラオフセット範囲",
+    },
+    cameraChangeInterval: {
+      value: 3,
+      min: 1,
+      max: 10,
+      step: 0.5,
+      label: "視点変更間隔(秒)",
+    },
+    cameraLagSpeed: {
+      value: 0.8,
+      min: 0.1,
+      max: 2,
+      step: 0.1,
+      label: "カメラ追従速度",
+    },
+    scrollSensitivity: {
+      value: 0.01,
+      min: 0.001,
+      max: 0.1,
+      step: 0.001,
+      label: "スクロール感度",
+    },
+    cameraSwayAmount: {
+      value: 15,
+      min: 0,
+      max: 50,
+      step: 1,
+      label: "カメラ振り幅",
+    },
+    lookAtToggleThreshold: {
+      value: 100,
+      min: 10,
+      max: 500,
+      step: 10,
+      label: "LookAt切替閾値",
+    },
     cubeColor: { value: "gold", label: "キューブ色" },
     restitution: { value: 0, min: 0, max: 2, step: 0.01, label: "反発係数" },
   });
 
+  // 初期カメラ位置を保存
   useEffect(() => {
+    originalCameraPositionRef.current.copy(camera.position);
+  }, [camera]);
+
+  useEffect(() => {
+    const handleWheel = (event) => {
+      scrollRef.current += event.deltaY * scrollSensitivity;
+      
+      // スクロール量に基づいてLookAtのオン/オフを決定
+      const scrollCycle = Math.floor(Math.abs(scrollRef.current) / lookAtToggleThreshold);
+      isLookAtActiveRef.current = scrollCycle % 2 === 0;
+    };
+
     const handleDblClick = (event) => {
       const rect = gl.domElement.getBoundingClientRect();
       mouse.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -65,28 +156,87 @@ const SceneContent = () => {
       }
     };
 
+    window.addEventListener("wheel", handleWheel);
     window.addEventListener("dblclick", handleDblClick);
     window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
+      window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("dblclick", handleDblClick);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [camera, gl]);
+  }, [camera, gl, scrollSensitivity, lookAtToggleThreshold]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (cubeRef.current) {
+      timeRef.current += delta;
+      
+      // キューブの位置更新
       const currentPos = cubeRef.current.translation();
       const nextPos = new THREE.Vector3().lerpVectors(
         currentPos,
         targetPos.current,
-        moveSpeed, // ← Leva から
+        moveSpeed,
       );
+      
+      nextPos.x += Math.sin(timeRef.current * swaySpeed) * swayAmount;
       cubeRef.current.setNextKinematicTranslation(nextPos);
-      cameraTarget.current.lerp(nextPos, 0.05);
-      camera.lookAt(cameraTarget.current);
 
-      cumulativeEuler.current.y += rotationSpeed; // ← Leva から
+      if (isLookAtActiveRef.current) {
+        // LookAtモード：固定点を見つめる（Cubeは画面内を自由に移動）
+        if (timeRef.current - lastChangeTimeRef.current > cameraChangeInterval) {
+          // カメラの注視点を固定位置周辺でランダムに設定
+          randomTargetRef.current.set(
+            (Math.random() - 0.5) * cameraOffsetRange,
+            1 + (Math.random() - 0.5) * cameraOffsetRange * 0.5,
+            (Math.random() - 0.5) * cameraOffsetRange
+          );
+          lastChangeTimeRef.current = timeRef.current;
+        }
+
+        const microSway = new THREE.Vector3(
+          Math.sin(timeRef.current * 2.3) * 0.3,
+          Math.cos(timeRef.current * 1.8) * 0.2,
+          Math.sin(timeRef.current * 1.5) * 0.25
+        );
+
+        cameraOffsetRef.current.lerp(
+          randomTargetRef.current.clone().add(microSway), 
+          delta * cameraLagSpeed
+        );
+        
+        // 固定された注視点を見る（Cubeの位置に依存しない）
+        const fixedLookAt = new THREE.Vector3(0, 1, 0).add(cameraOffsetRef.current);
+        cameraTarget.current.copy(fixedLookAt);
+        camera.lookAt(cameraTarget.current);
+        
+        // カメラ位置を徐々に元に戻す
+        camera.position.lerp(originalCameraPositionRef.current, delta * 0.5);
+        
+      } else {
+        // フリーカメラモード：カメラ自体を左右に振る + 注視点も変更
+        const swayTarget = new THREE.Vector3(
+          Math.sin(timeRef.current * 1.2) * cameraSwayAmount,
+          Math.sin(timeRef.current * 0.8) * cameraSwayAmount * 0.3,
+          Math.cos(timeRef.current * 0.9) * cameraSwayAmount * 0.5
+        );
+        
+        cameraSwayRef.current.lerp(swayTarget, delta * 2);
+        
+        const newCameraPos = originalCameraPositionRef.current.clone().add(cameraSwayRef.current);
+        camera.position.copy(newCameraPos);
+        
+        // 注視点もランダムに変更（Cubeから完全に独立）
+        const randomLookTarget = new THREE.Vector3(
+          Math.sin(timeRef.current * 0.4) * 20,
+          Math.cos(timeRef.current * 0.3) * 10,
+          Math.sin(timeRef.current * 0.5) * 15
+        );
+        camera.lookAt(randomLookTarget);
+      }
+
+      // キューブの回転更新
+      cumulativeEuler.current.y += rotationSpeed;
       const nextQuat = new THREE.Quaternion().setFromEuler(
         cumulativeEuler.current,
       );
