@@ -1,0 +1,58 @@
+{
+  "glyphs": {
+    "い": {
+      "ha": 1000,
+      "x_min": 0,
+      "x_max": 1000,
+      "o": "m 500 0 l 1000 1000 l 0 1000 z"
+    },
+    "ち": {
+      "ha": 1000,
+      "x_min": 0,
+      "x_max": 1000,
+      "o": "m 0 0 l 1000 0 l 500 1000 z"
+    },
+    "ば": {
+      "ha": 1000,
+      "x_min": 0,
+      "x_max": 1000,
+      "o": "m 0 500 l 1000 500 l 500 1000 z"
+    },
+    "ん": {
+      "ha": 1000,
+      "x_min": 0,
+      "x_max": 1000,
+      "o": "m 0 0 l 1000 0 l 1000 1000 l 0 1000 z"
+    },
+    "星": {
+      "ha": 1000,
+      "x_min": 0,
+      "x_max": 1000,
+      "o": "m 500 0 l 600 400 l 1000 400 l 700 600 l 800 1000 l 500 750 l 200 1000 l 300 600 l 0 400 l 400 400 z"
+    }
+  },
+  "familyName": "Bold",
+  "ascender": 1000,
+  "descender": 0,
+  "underlinePosition": -100,
+  "underlineThickness": 50,
+  "boundingBox": {
+    "yMin": 0,
+    "xMin": 0,
+    "yMax": 1000,
+    "xMax": 1000
+  },
+  "resolution": 1000,
+  "original_font_information": {
+    "format": 0,
+    "copyright": "Custom font for いちばん星",
+    "fontFamily": "Bold",
+    "fontSubfamily": "Regular",
+    "uniqueID": "Bold:Version 1.00",
+    "fullName": "Bold",
+    "version": "Version 1.00 December 21, 2023",
+    "postScriptName": "Bold"
+  },
+  "cssFontWeight": "normal",
+  "cssFontStyle": "normal"
+} 

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 
 import LoginCanvas from "../components/LoginCanvas";
+import CGGararyCanvas from "../components/CGGararyCanvas";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +29,9 @@ const LoginPage = () => {
           <div className="text-center mb-8">
             <div className="flex flex-col items-center gap-2 group">
               <p className="text-base-content/60">
-              <br />
-              <br />
-              <br />
+                <br />
+                <br />
+                <br />
                 ボールが一つも残らなかったというあなた。
               </p>
               <p className="text-base-content/60">
@@ -39,6 +40,7 @@ const LoginPage = () => {
 
               {/* Canvasを別コンポーネント化 */}
               <LoginCanvas />
+              {/* <CGGararyCanvas /> */}
 
               {/* <div
                   className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20
@@ -48,7 +50,9 @@ const LoginPage = () => {
                 </div> */}
 
               <h1 className="text-2xl font-bold mt-2">おかえりなさい</h1>
-              <p className="text-base-content/60">ログインしてください（アカウント登録は下部へ）</p>
+              <p className="text-base-content/60">
+                ログインしてください（アカウント登録は下部へ）
+              </p>
             </div>
           </div>
 

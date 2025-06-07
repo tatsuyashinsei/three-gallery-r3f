@@ -6,6 +6,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
+import AboutPage from "./pages/AboutPage";
 
 import GalleryPage from "./pages/GalleryPage";
 import GalleryCanvas1_1 from "./pages/GalleryCanvas1_1";
@@ -22,12 +23,12 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
-import ColumnsPage from "./pages/Columns";
 import NotionArticleDetail from "./pages/NotionArticles/ArticleDetail";
-
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { theme } = useThemeStore();
 
   useEffect(() => {
@@ -46,11 +47,11 @@ const App = () => {
       <Navbar />
 
       <Routes>
-        {/* ✅ トップページ、Main、Settings、Columns は未ログインでも表示可 */}
+        {/* ✅ トップページ、Main、Settings は未ログインでも表示可 */}
         <Route path="/" element={<HomePage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/columns" element={<ColumnsPage />} />
+        <Route path="/about" element={<AboutPage />} />
 
         {/* ✅ Gallery 関連も全て未ログインでOK */}
         <Route path="/gallery" element={<GalleryPage />} />
@@ -60,8 +61,9 @@ const App = () => {
         <Route path="/gallery/canvas4" element={<GalleryCanvas4 />} />
         <Route path="/gallery/canvas3_1" element={<GalleryCanvas3_1 />} />
 
-        {/* ✅ Notion 関連 */}
-        <Route path="/columns/:id" element={<NotionArticleDetail />} />
+        {/* ✅ Blog 関連 */}
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
 
         {/* 🔐 ログイン状態に応じて分岐するページ */}
         <Route
@@ -81,7 +83,6 @@ const App = () => {
       <Toaster />
     </div>
   );
-
 };
 
 export default App;

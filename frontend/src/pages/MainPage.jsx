@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Palette, FileText, Briefcase, MessageSquare } from "lucide-react";
+import AnimatedTitle from "../components/AnimatedTitle";
 
 const MainPage = () => {
   return (
@@ -50,11 +51,12 @@ const MainPage = () => {
       </div>
 
       {/* メニュー見出し */}
-      <h1 className="text-3xl font-bold text-center">おかえりなさい</h1>
+      <div className="flex justify-center">
+        <AnimatedTitle text="おかえりなさい" />
+      </div>
       
       {/* メニューリンク */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-xl">
-
         <Link
           to="/settings"
           className="btn btn-primary w-full flex gap-2 items-center justify-center scale-90"
@@ -64,7 +66,7 @@ const MainPage = () => {
         </Link>
 
         <Link
-          to="/columns"
+          to="/blog"
           className="btn btn-secondary w-full flex gap-2 items-center justify-center scale-90"
         >
           <FileText size={18} />
@@ -82,7 +84,6 @@ const MainPage = () => {
 
       {/* チャットログインリンク */}
       <div className="mt-12">
-
         <Link
           to="/login"
           className="btn btn-outline btn-wide flex gap-2 items-center"
@@ -90,7 +91,6 @@ const MainPage = () => {
           <MessageSquare size={20} />
           チャット
         </Link>
-
       </div>
     </div>
   );
