@@ -7,7 +7,16 @@ import Floor3 from "./Floor3";
 import GuiPanel3 from "./GuiPanel3";
 import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
-export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, modelRef, cameraControllerRef, bloomRef, onEmissiveIntensityChange }) {
+export default function GuiPanelRoot({ 
+  createBeam, 
+  beamVisible, 
+  setBeamVisible, 
+  modelRef, 
+  cameraControllerRef, 
+  bloomRef, 
+  onEmissiveIntensityChange,
+  isLoading = false
+}) {
   const [environmentTexture, setEnvTexture] = useState(null);
 
   // 表示制御
@@ -68,30 +77,33 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
         />
       </Suspense>
 
-      <GuiPanel3
-        floor1={floor1Ref}
-        floor2={floor2Ref}
-        texture1={texture1}
-        texture2={texture2}
-        environmentTexture={environmentTexture}
-        modelRef={modelRef}
-        createBeam={createBeam}
-        loadHDR={handleLoadJPG}
-        testLight={testLight.current}
-        modelVisible={modelVisible}
-        setModelVisible={setModelVisible}
-        floorVisible={floorVisible}
-        setFloorVisible={setFloorVisible}
-        floor1TextureVisible={floor1TextureVisible}
-        setFloor1TextureVisible={setFloor1TextureVisible}
-        floor2TextureVisible={floor2TextureVisible}
-        setFloor2TextureVisible={setFloor2TextureVisible}
-        beamVisible={beamVisible}
-        setBeamVisible={setBeamVisible}
-        cameraControllerRef={cameraControllerRef}
-        bloomRef={bloomRef}
-        onEmissiveIntensityChange={onEmissiveIntensityChange}
-      />
+      {/* ローディング中はGUIを非表示 */}
+      {!isLoading && (
+        <GuiPanel3
+          floor1={floor1Ref}
+          floor2={floor2Ref}
+          texture1={texture1}
+          texture2={texture2}
+          environmentTexture={environmentTexture}
+          modelRef={modelRef}
+          createBeam={createBeam}
+          loadHDR={handleLoadJPG}
+          testLight={testLight.current}
+          modelVisible={modelVisible}
+          setModelVisible={setModelVisible}
+          floorVisible={floorVisible}
+          setFloorVisible={setFloorVisible}
+          floor1TextureVisible={floor1TextureVisible}
+          setFloor1TextureVisible={setFloor1TextureVisible}
+          floor2TextureVisible={floor2TextureVisible}
+          setFloor2TextureVisible={setFloor2TextureVisible}
+          beamVisible={beamVisible}
+          setBeamVisible={setBeamVisible}
+          cameraControllerRef={cameraControllerRef}
+          bloomRef={bloomRef}
+          onEmissiveIntensityChange={onEmissiveIntensityChange}
+        />
+      )}
     </>
   );
 }

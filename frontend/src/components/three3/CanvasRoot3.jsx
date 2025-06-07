@@ -331,6 +331,7 @@ export default function CanvasRoot3() {
           cameraControllerRef={cameraControllerRef}
           bloomRef={bloomRef}
           onEmissiveIntensityChange={setEmissiveIntensity}
+          isLoading={isLoading}
         />
       </Canvas>
     </>

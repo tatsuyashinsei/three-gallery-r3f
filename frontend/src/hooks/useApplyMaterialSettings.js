@@ -6,6 +6,7 @@ import * as THREE from "three";
 export function useApplyMaterialSettings(
   modelRef,
   settings,
+  // eslint-disable-next-line no-unused-vars
   targetName = null
 ) {
   useEffect(() => {
@@ -26,7 +27,7 @@ export function useApplyMaterialSettings(
                 ior: settings.ior,
                 opacity: settings.opacity,
                 transparent: settings.opacity < 1,
-                emissive: new THREE.Color(0xffffff),
+                emissive: new THREE.Color(0xffeb3b),
                 emissiveIntensity: settings.emissiveIntensity,
                 });
 
