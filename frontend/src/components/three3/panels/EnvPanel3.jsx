@@ -1,6 +1,6 @@
 import { useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { useEffect } from "react";
+import { useEffect, forwardRef, useImperativeHandle } from "react";
 import useGuiStore from "@/store/useGuiStore";
 
 import { useEnvControls, envMapList } from "./Env3Controllers/EnvControls";
@@ -8,7 +8,7 @@ import FloorTextureController from "./Env3Controllers/FloorTextureController";
 import BeamController from "./Env3Controllers/BeamController";
 import BackgroundController from "./Env3Controllers/BackgroundController";
 
-export default function EnvPanel3({
+const EnvPanel3 = forwardRef(({
   floor1,
   floor2,
   texture1,
@@ -21,7 +21,7 @@ export default function EnvPanel3({
   orangeBeam,
   createBeam,
   loadHDR,
-}) {
+}, ref) => {
   const { scene } = useThree();
   const { isLoadingHDR } = useGuiStore();
 
@@ -32,7 +32,21 @@ export default function EnvPanel3({
     floor2TextureVisible,
     beamVisible,
     envMap,
+    resetEnvControls,
   } = useEnvControls();
+
+  // リセット機能を公開
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      console.log("🔄 [EnvPanel3] リセット実行");
+      
+      // 環境設定を初期値にリセット
+      resetEnvControls();
+      
+      // デフォルト背景画像を読み込み
+      loadHDR(envMapList["選択してくださいーー"]);
+    }
+  }));
 
   // ✅ 環境マップとライトの切り替え
   useEffect(() => {
@@ -87,4 +101,8 @@ export default function EnvPanel3({
       )}
     </>
   );
-}
+});
+
+EnvPanel3.displayName = 'EnvPanel3';
+
+export default EnvPanel3;

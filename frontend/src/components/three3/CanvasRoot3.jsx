@@ -8,6 +8,7 @@ import SceneContent3 from "./SceneContent3";
 import GuiPanelRoot from "./GuiPanelRoot";
 import PostProcessing3 from "./PostProcessing3";
 import BeamEffect from "./BeamEffect";
+import CameraController from "./CameraController";
 import { useBeamStore } from "@/store/useBeamStore";
 
 // 🔧 exposure のアニメーション管理
@@ -100,6 +101,7 @@ export default function CanvasRoot3() {
   const [beamPosition, setBeamPosition] = useState(new THREE.Vector3());
   const [isModelReady, setIsModelReady] = useState(false);
   const modelRef = useRef(null);
+  const cameraControllerRef = useRef(null);
   const manualOffset = useMemo(() => new THREE.Vector3(0, 0.2, 0), []); // 微調整用オフセット
   const updateCount = useRef(0);
   const hasLoggedMaxUpdates = useRef(false);
@@ -323,11 +325,14 @@ export default function CanvasRoot3() {
         </>
       )}
 
+      <CameraController ref={cameraControllerRef} />
+
       <GuiPanelRoot
         createBeam={createBeam}
         beamVisible={beamVisible}
         setBeamVisible={setBeamVisible}
         modelRef={modelRef}
+        cameraControllerRef={cameraControllerRef}
       />
     </Canvas>
   );

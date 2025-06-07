@@ -7,7 +7,7 @@ import Floor3 from "./Floor3";
 import GuiPanel3 from "./GuiPanel3";
 import { loadJPGEnvironment } from "@/lib/loadJPGEnvironment";
 
-export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, modelRef }) {
+export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, modelRef, cameraControllerRef }) {
   const [environmentTexture, setEnvTexture] = useState(null);
 
   // 表示制御
@@ -88,6 +88,7 @@ export default function GuiPanelRoot({ createBeam, beamVisible, setBeamVisible, 
         setFloor2TextureVisible={setFloor2TextureVisible}
         beamVisible={beamVisible}
         setBeamVisible={setBeamVisible}
+        cameraControllerRef={cameraControllerRef}
       />
     </>
   );
