@@ -10,6 +10,7 @@ import PostProcessing3 from "./PostProcessing3";
 import BeamEffect from "./BeamEffect";
 import CameraController from "./CameraController";
 import BloomPostProcessing from "./BloomPostProcessing";
+import LoaderOverlay from "../LoaderOverlay";
 import { useBeamStore } from "@/store/useBeamStore";
 
 // グローバルフラグで演出の重複実行を防ぐ
@@ -173,268 +174,166 @@ function BeamOriginTracker({ modelRef, setBeamPosition, setIsModelReady }) {
 }
 
 export default function CanvasRoot3() {
-  const beamVisible = useBeamStore((state) => state.beamVisible);
-  const setBeamVisible = useBeamStore((state) => state.setBeamVisible);
-  const [beamPosition, setBeamPosition] = useState(new THREE.Vector3());
+  const modelRef = useRef();
+  const cameraControllerRef = useRef();
+  const bloomRef = useRef();
+
+  // Loading state management
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // ビーム状態管理
+  const [beamPosition, setBeamPosition] = useState(null);
   const [isModelReady, setIsModelReady] = useState(false);
-  const [emissiveIntensity, setEmissiveIntensity] = useState(7); // 発光強度の状態管理
-  const modelRef = useRef(null);
-  const cameraControllerRef = useRef(null);
-  const bloomRef = useRef(null);
-  const manualOffset = useMemo(() => new THREE.Vector3(0, 0.2, 0), []); // 微調整用オフセット
-  const updateCount = useRef(0);
-  const hasLoggedMaxUpdates = useRef(false);
+  const [shouldShowBeams, setShouldShowBeams] = useState(false);
+  const [beamVisible, setBeamVisible] = useState(false);
 
-  // 🔄 モデルの準備状態を監視
-  useEffect(() => {
-    updateCount.current += 1;
-    if (updateCount.current <= 30) {
-      console.log("🔄 [CanvasRoot3] Model ready state changed:", {
-        isModelReady,
-        hasModelRef: !!modelRef.current,
-        hasCone: !!modelRef.current?.cone,
-        beamVisible,
-        updateCount: updateCount.current
-      });
-    } else if (!hasLoggedMaxUpdates.current) {
-      console.log("🔚 [CanvasRoot3] Stopping state change logs after 30 updates");
-      hasLoggedMaxUpdates.current = true;
+  // GUI状態
+  const [emissiveIntensity, setEmissiveIntensity] = useState(7);
+
+  // ビームデータ計算
+  const { greenBeamData, orangeBeamData } = useMemo(() => {
+    if (!beamPosition) {
+      return {
+        greenBeamData: { start: new THREE.Vector3(), end: new THREE.Vector3() },
+        orangeBeamData: { start: new THREE.Vector3(), end: new THREE.Vector3() }
+      };
     }
-  }, [isModelReady, modelRef, beamVisible]);
 
-  // 🔄 beamVisible の変更を監視
-  useEffect(() => {
-    console.log("🎯 [CanvasRoot3] beamVisible state changed:", {
-      beamVisible,
-      isModelReady,
-      hasValidPosition: beamPosition && !beamPosition.equals(new THREE.Vector3()),
-      modelRefExists: !!modelRef.current,
-      updateCount: updateCount.current
-    });
-  }, [beamVisible]);
-
-  // 🔄 その他の状態変更を監視  
-  useEffect(() => {
-    if (updateCount.current <= 30) {
-      console.log("🔄 [CanvasRoot3] State update:", {
-        beamVisible,
-        isModelReady,
-        hasValidPosition: beamPosition && !beamPosition.equals(new THREE.Vector3()),
-        modelRefExists: !!modelRef.current,
-        hasCone: !!modelRef.current?.cone,
-        updateCount: updateCount.current
-      });
-    }
-  }, [beamPosition, isModelReady]);
-
-  const createBeam = () => {
-    if (!isModelReady) {
-      if (updateCount.current <= 30) {
-        console.warn("⚠️ [CanvasRoot3] createBeam called but model not ready:", {
-          isModelReady,
-          hasModelRef: !!modelRef.current,
-          beamPosition: beamPosition?.toArray()
-        });
+    return {
+      greenBeamData: {
+        start: beamPosition.clone(),
+        end: beamPosition.clone().add(new THREE.Vector3(50, 10, 20))
+      },
+      orangeBeamData: {
+        start: beamPosition.clone(),
+        end: beamPosition.clone().add(new THREE.Vector3(45, 15, 25))
       }
-      return;
-    }
+    };
+  }, [beamPosition]);
 
-    if (!beamPosition || beamPosition.equals(new THREE.Vector3())) {
-      if (updateCount.current <= 30) {
-        console.warn("⚠️ [CanvasRoot3] createBeam called but invalid beam position:", {
-          hasPosition: !!beamPosition,
-          position: beamPosition?.toArray()
-        });
+  // ビーム表示の遅延制御
+  useEffect(() => {
+    if (isModelReady && !isLoading) {
+      const timer = setTimeout(() => {
+        setShouldShowBeams(true);
+      }, 15000); // 15秒後にビーム表示開始
+
+      return () => clearTimeout(timer);
+    }
+  }, [isModelReady, isLoading]);
+
+  // ローディング進捗シミュレーション（実際のアセット読み込みに合わせて調整可能）
+  useEffect(() => {
+    let progressTimer;
+    let currentProgress = 0;
+
+    const updateProgress = () => {
+      currentProgress += Math.random() * 15 + 5; // ランダムに5-20%ずつ増加
+      
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        setLoadingProgress(100);
+        clearInterval(progressTimer);
+      } else {
+        setLoadingProgress(Math.floor(currentProgress));
+        progressTimer = setTimeout(updateProgress, 200 + Math.random() * 300); // 200-500ms間隔
       }
-      return;
-    }
+    };
 
-    if (updateCount.current <= 30) {
-      console.log("⚡️ [CanvasRoot3] createBeam called", {
-        currentVisibility: beamVisible,
-        modelReady: isModelReady,
-        beamPosition: beamPosition.toArray()
-      });
-    }
+    // 初期遅延後に進捗開始
+    const initialTimer = setTimeout(updateProgress, 300);
+
+    return () => {
+      clearTimeout(initialTimer);
+      if (progressTimer) clearTimeout(progressTimer);
+    };
+  }, []);
+
+  // ローディング完了時の処理
+  const handleLoadingComplete = () => {
+    console.log("🎬 ローディング完了 - アプリケーション開始");
+    setIsLoading(false);
   };
 
-  // 📍 ビーム位置の計算
-  const beamStartPos = useMemo(() => {
-    if (!beamPosition || !isModelReady) {
-      if (updateCount.current <= 30) {
-        console.log("⏩ [CanvasRoot3] Skipping beam position calc:", {
-          hasPosition: !!beamPosition,
-          modelReady: isModelReady,
-          position: beamPosition?.toArray()
-        });
-      }
-      return null;
-    }
-
-    try {
-      const pos = beamPosition.clone().add(manualOffset);
-      if (updateCount.current <= 30) {
-        console.log("📍 [CanvasRoot3] ビーム開始位置:", {
-          original: beamPosition.toArray(),
-          withOffset: pos.toArray(),
-          offset: manualOffset.toArray()
-        });
-      }
-      return pos;
-    } catch (error) {
-      console.error("❌ [CanvasRoot3] ビーム位置計算エラー:", error);
-      return null;
-    }
-  }, [beamPosition, manualOffset, isModelReady]);
-
-  // 🟢 グリーンビームの方向と終点
-  const greenBeamData = useMemo(() => {
-    if (!beamStartPos) {
-      if (updateCount.current <= 30) {
-        console.log("⏩ [CanvasRoot3] グリーンビーム: beamStartPos なし → スキップ");
-      }
-      return null;
-    }
-
-    try {
-      // グリーンビームのパラメータ調整
-      const direction = new THREE.Vector3(1, 0.3, 0.27)  // Y軸方向をさらに10度上向きに
-        .normalize()
-        .multiplyScalar(30);  // ビーム長さを3倍に（倍増）
-      const start = beamStartPos.clone().add(new THREE.Vector3(0, -0.1, 0));
-      const end = start.clone().add(direction);
-
-      if (updateCount.current <= 30) {
-        console.log("🟢 [CanvasRoot3] グリーンビーム計算完了:", {
-          start: start.toArray(),
-          end: end.toArray(),
-          direction: direction.toArray(),
-          length: direction.length()
-        });
-      }
-      return { start, end };
-    } catch (error) {
-      console.error("❌ [CanvasRoot3] グリーンビーム計算エラー:", error);
-      return null;
-    }
-  }, [beamStartPos]);
-
-  // 🟠 オレンジビームの方向と終点
-  const orangeBeamData = useMemo(() => {
-    if (!beamStartPos) {
-      if (updateCount.current <= 30) {
-        console.log("⏩ [CanvasRoot3] オレンジビーム: beamStartPos なし → スキップ");
-      }
-      return null;
-    }
-
-    try {
-      // オレンジビームのパラメータ調整
-      const direction = new THREE.Vector3(1, 0.4, 0.26)  // Y軸方向をさらに上向きに
-        .normalize()
-        .multiplyScalar(30);  // ビーム長さを3倍に（倍増）
-      const start = beamStartPos.clone().add(new THREE.Vector3(0, 0.1, 0));
-      const end = start.clone().add(direction);
-
-      if (updateCount.current <= 30) {
-        console.log("🟠 [CanvasRoot3] オレンジビーム計算完了:", {
-          start: start.toArray(),
-          end: end.toArray(),
-          direction: direction.toArray(),
-          length: direction.length()
-        });
-      }
-      return { start, end };
-    } catch (error) {
-      console.error("❌ [CanvasRoot3] オレンジビーム計算エラー:", error);
-      return null;
-    }
-  }, [beamStartPos]);
-
-  // 🎯 ビーム表示の条件をチェック
-  const shouldShowBeams = useMemo(() => {
-    const ready = beamVisible && isModelReady && greenBeamData && orangeBeamData;
-    if (updateCount.current <= 30) {
-      console.log("🎯 [CanvasRoot3] ビーム表示条件:", {
-        beamVisible,
-        isModelReady,
-        hasGreenData: !!greenBeamData,
-        hasOrangeData: !!orangeBeamData,
-        ready,
-        position: beamPosition?.toArray(),
-        greenStart: greenBeamData?.start?.toArray(),
-        orangeStart: orangeBeamData?.start?.toArray()
-      });
-    }
-    return ready;
-  }, [beamVisible, isModelReady, greenBeamData, orangeBeamData, beamPosition]);
+  const createBeam = useBeamStore((state) => state.createBeam);
 
   return (
-    <Canvas
-      gl={{ 
-        antialias: true,
-        toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 0.0,
-        outputColorSpace: THREE.SRGBColorSpace
-      }}
-      camera={{ position: [-180, 5, -50], fov: 75 }}
-      style={{ width: "100%", height: "100vh", background: "black" }}
-      onCreated={({ gl, scene }) => {
-        // Canvas作成時に確実に設定
-        gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 0.0;
-        gl.outputColorSpace = THREE.SRGBColorSpace;
-        scene.background = new THREE.Color(0x000000);
-        console.log("🎬 Canvas初期化: レンダラー設定完了", {
-          toneMapping: gl.toneMapping,
-          toneMappingExposure: gl.toneMappingExposure,
-          outputColorSpace: gl.outputColorSpace
-        });
-      }}
-    >
-      <ToneMappingController />
-      <SceneContent3 modelRef={modelRef} />
-      <PostProcessing3 />
-
-      <BeamOriginTracker
-        modelRef={modelRef}
-        setBeamPosition={setBeamPosition}
-        setIsModelReady={setIsModelReady}
-      />
-
-      {shouldShowBeams && (
-        <>
-          <BeamEffect
-            type="green"
-            start={greenBeamData.start}
-            end={greenBeamData.end}
-            visible={beamVisible}
-            alpha={1.5}
-          />
-          <BeamEffect
-            type="orange"
-            start={orangeBeamData.start}
-            end={orangeBeamData.end}
-            visible={beamVisible}
-            alpha={1.5}
-          />
-        </>
+    <>
+      {/* ローディングオーバーレイ */}
+      {isLoading && (
+        <LoaderOverlay 
+          progress={loadingProgress} 
+          onLoadingComplete={handleLoadingComplete}
+        />
       )}
 
-      <CameraController ref={cameraControllerRef} />
+      <Canvas
+        gl={{ 
+          antialias: true,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 0.0,
+          outputColorSpace: THREE.SRGBColorSpace
+        }}
+        camera={{ position: [-180, 5, -50], fov: 75 }}
+        style={{ width: "100%", height: "100vh", background: "black" }}
+        onCreated={({ gl, scene }) => {
+          // Canvas作成時に確実に設定
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 0.0;
+          gl.outputColorSpace = THREE.SRGBColorSpace;
+          scene.background = new THREE.Color(0x000000);
+          console.log("🎬 Canvas初期化: レンダラー設定完了", {
+            toneMapping: gl.toneMapping,
+            toneMappingExposure: gl.toneMappingExposure,
+            outputColorSpace: gl.outputColorSpace
+          });
+        }}
+      >
+        <ToneMappingController />
+        <SceneContent3 modelRef={modelRef} />
+        <PostProcessing3 />
 
-      <BloomPostProcessing ref={bloomRef} emissiveIntensity={emissiveIntensity} />
+        <BeamOriginTracker
+          modelRef={modelRef}
+          setBeamPosition={setBeamPosition}
+          setIsModelReady={setIsModelReady}
+        />
 
-      <GuiPanelRoot
-        createBeam={createBeam}
-        beamVisible={beamVisible}
-        setBeamVisible={setBeamVisible}
-        modelRef={modelRef}
-        cameraControllerRef={cameraControllerRef}
-        bloomRef={bloomRef}
-        onEmissiveIntensityChange={setEmissiveIntensity}
-      />
-    </Canvas>
+        {shouldShowBeams && (
+          <>
+            <BeamEffect
+              type="green"
+              start={greenBeamData.start}
+              end={greenBeamData.end}
+              visible={beamVisible}
+              alpha={1.5}
+            />
+            <BeamEffect
+              type="orange"
+              start={orangeBeamData.start}
+              end={orangeBeamData.end}
+              visible={beamVisible}
+              alpha={1.5}
+            />
+          </>
+        )}
+
+        <CameraController ref={cameraControllerRef} />
+
+        <BloomPostProcessing ref={bloomRef} emissiveIntensity={emissiveIntensity} />
+
+        <GuiPanelRoot
+          createBeam={createBeam}
+          beamVisible={beamVisible}
+          setBeamVisible={setBeamVisible}
+          modelRef={modelRef}
+          cameraControllerRef={cameraControllerRef}
+          bloomRef={bloomRef}
+          onEmissiveIntensityChange={setEmissiveIntensity}
+        />
+      </Canvas>
+    </>
   );
 }
 
