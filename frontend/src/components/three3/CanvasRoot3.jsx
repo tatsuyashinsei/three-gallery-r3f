@@ -63,17 +63,17 @@ function ToneMappingController() {
 
     const elapsed = performance.now() - startTimeRef.current;
     const exposureDuration = 13000;  // 13秒間の演出
-    const exposureTarget = 1.0;      // より明るい目標値
+    const exposureTarget = 0.4;      // 白飛びを防ぐためより控えめに
 
-    // イーズアウト関数（二次関数）
-    const easeOutQuad = (t) => t * (2 - t);
+    // イーズイン関数（二次関数 - 最初速く、後で緩やか）
+    const easeInQuad = (t) => t * t;
 
     if (elapsed < exposureDuration) {
       const progress = elapsed / exposureDuration;
       const newExposure = THREE.MathUtils.lerp(
         0,
         exposureTarget,
-        easeOutQuad(progress)
+        easeInQuad(progress)
       );
       
       // より確実に設定
@@ -81,19 +81,20 @@ function ToneMappingController() {
       
       // デバッグログ（毎フレーム出力して確実に動作確認）
       if (Math.floor(elapsed / 500) % 2 === 0 && elapsed % 500 < 16.67) {
-        console.log(`🌅 ToneMapping進行中: ${(elapsed/1000).toFixed(1)}s / ${exposureDuration/1000}s`, {
+        console.log(`🌅 ToneMapping進行中 (イーズイン): ${(elapsed/1000).toFixed(1)}s / ${exposureDuration/1000}s`, {
           progress: (progress * 100).toFixed(1) + '%',
           exposure: newExposure.toFixed(3),
           glExposure: gl.toneMappingExposure,
-          frameTime: performance.now()
+          easing: 'ease-in'
         });
       }
     } else {
       gl.toneMappingExposure = exposureTarget;
       if (elapsed - exposureDuration < 100) { // 一度だけログ出力
-        console.log("✅ ToneMapping演出完了", { 
+        console.log("✅ ToneMapping演出完了 (イーズイン)", { 
           finalExposure: gl.toneMappingExposure,
-          totalTime: (elapsed/1000).toFixed(1) + 's'
+          totalTime: (elapsed/1000).toFixed(1) + 's',
+          easing: 'ease-in'
         });
         // 演出完了後はグローバルフラグをリセット（次回のために）
         setTimeout(() => {
