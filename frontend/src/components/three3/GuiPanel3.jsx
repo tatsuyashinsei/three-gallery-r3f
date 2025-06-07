@@ -28,6 +28,8 @@ export default function GuiPanel3({
   beamVisible,
   setBeamVisible,
   cameraControllerRef,
+  bloomRef, // ブルーム用のref
+  onEmissiveIntensityChange,
 }) {
   // リセット用のrefs
   const modelPanelRef = useRef();
@@ -39,6 +41,13 @@ export default function GuiPanel3({
     console.log("🔄 [GuiPanel3] beamVisible prop changed:", beamVisible);
   }, [beamVisible]);
 
+  // 発光強度が変更されたときの処理
+  const handleEmissiveIntensityChange = (value) => {
+    if (onEmissiveIntensityChange) {
+      onEmissiveIntensityChange(value);
+    }
+  };
+
   // 初期化関数
   const handleReset = () => {
     console.log("🔄 初期化ボタンが押されました");
@@ -49,6 +58,11 @@ export default function GuiPanel3({
     setFloor1TextureVisible(false);
     setFloor2TextureVisible(false);
     setBeamVisible(false);
+
+    // 発光強度も初期値にリセット
+    if (onEmissiveIntensityChange) {
+      onEmissiveIntensityChange(7);
+    }
 
     // 各パネルのリセット
     if (modelPanelRef.current?.reset) {
@@ -64,6 +78,11 @@ export default function GuiPanel3({
     // カメラのリセット
     if (cameraControllerRef?.current?.reset) {
       cameraControllerRef.current.reset();
+    }
+
+    // ブルームのリセット
+    if (bloomRef?.current?.reset) {
+      bloomRef.current.reset();
     }
 
     console.log("✅ 全パラメータを初期値にリセットしました");
@@ -131,7 +150,8 @@ export default function GuiPanel3({
       <ModelPanel3 
         ref={modelPanelRef}
         modelRef={modelRef} 
-        testLight={testLight} 
+        testLight={testLight}
+        onEmissiveIntensityChange={handleEmissiveIntensityChange}
       />
       <MaterialPanel3 
         ref={materialPanelRef}

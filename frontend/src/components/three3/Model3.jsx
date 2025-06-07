@@ -30,7 +30,17 @@ export default function Model3({ visible = true, modelRef, onLoad }) {
         if (child.name === "Cone_Color_0" || child.name.includes("Star")) {
           console.log("🎯 Model3: Found target mesh:", child.name);
           child.material.emissive = new THREE.Color(0xffffff);
-          child.material.emissiveIntensity = 20;
+          child.material.emissiveIntensity = 7;
+          child.material.roughness = 0.4;
+          child.material.metalness = 0.6;
+          child.material.needsUpdate = true;
+          
+          console.log("✨ Initial material settings:", {
+            name: child.name,
+            emissiveIntensity: child.material.emissiveIntensity,
+            roughness: child.material.roughness,
+            metalness: child.material.metalness
+          });
         }
       }
     });

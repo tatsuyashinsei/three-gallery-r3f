@@ -3,6 +3,7 @@
 import { useControls, folder } from "leva";
 import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 // 初期値を定数として定義
 const INITIAL_VALUES = {
@@ -19,7 +20,7 @@ const INITIAL_VALUES = {
   opacity: 1.0,
 };
 
-const ModelPanel3 = forwardRef(({ modelRef }, ref) => {
+const ModelPanel3 = forwardRef(({ modelRef, onEmissiveIntensityChange }, ref) => {
   const materialRefs = useRef([]);
 
   const [controls, set] = useControls(() => ({
@@ -29,7 +30,18 @@ const ModelPanel3 = forwardRef(({ modelRef }, ref) => {
         editable: false,
       },
       rotationY: { value: INITIAL_VALUES.rotationY, min: 0, max: Math.PI * 2, step: 0.01, label: "横回転" },
-      emissiveIntensity: { value: INITIAL_VALUES.emissiveIntensity, min: 0, max: 15, label: "発光強度" },
+      emissiveIntensity: { 
+        value: INITIAL_VALUES.emissiveIntensity, 
+        min: 0, 
+        max: 30, 
+        label: "発光強度",
+        onChange: (value) => {
+          // 発光強度が変更されたときに親コンポーネントに通知
+          if (onEmissiveIntensityChange) {
+            onEmissiveIntensityChange(value);
+          }
+        }
+      },
       roughness: { value: INITIAL_VALUES.roughness, min: 0, max: 1, label: "目の粗さ" },
       metalness: { value: INITIAL_VALUES.metalness, min: 0, max: 1, label: "金属性" },
       envMapIntensity: { value: INITIAL_VALUES.envMapIntensity, min: 0, max: 5, label: "環境強度" },
@@ -87,62 +99,105 @@ const ModelPanel3 = forwardRef(({ modelRef }, ref) => {
       current.rotation.y = controls.rotationY;
 
       const collected = [];
+      console.log("🔍 モデル構造のデバッグ開始");
       current.traverse((child) => {
         if (child.isMesh && child.material) {
-          // マテリアルが配列のとき（multiMaterial）も対応
-          const materials = Array.isArray(child.material)
-            ? child.material
-            : [child.material];
-          materials.forEach((mat) => {
-            mat.emissive = mat.emissive ?? { r: 1, g: 1, b: 1 };
-            mat.emissiveIntensity = 0;
-            mat.needsUpdate = true;
-            collected.push(mat);
-          });
+          // 星のメッシュのみを対象にする（Cone_Color_0とStarを含むメッシュ）
+          if (child.name === "Cone_Color_0" || child.name.includes("Star")) {
+            console.log("🌟 発光対象メッシュを発見:", child.name, {
+              type: child.material.type,
+              beforeEmissive: child.material.emissive,
+              beforeIntensity: child.material.emissiveIntensity
+            });
+            
+            const materials = Array.isArray(child.material)
+              ? child.material
+              : [child.material];
+            
+            materials.forEach((mat, index) => {
+              // マテリアルの設定
+              const targetMat = mat;
+              
+              // 発光設定を適用（確実に値を設定）
+              targetMat.emissive = new THREE.Color(0xffffff);
+              targetMat.emissiveIntensity = Number(controls.emissiveIntensity) || 7;
+              targetMat.roughness = Number(controls.roughness) || 0.4;
+              targetMat.metalness = Number(controls.metalness) || 0.6;
+              
+              // 発光を確実にするための追加設定
+              targetMat.toneMapped = false;  // トーンマッピングを無効化
+              targetMat.needsUpdate = true;
+              
+              collected.push(targetMat);
+              
+              console.log("✅ 発光設定完了:", {
+                name: child.name,
+                materialIndex: index,
+                emissiveIntensity: targetMat.emissiveIntensity,
+                roughness: targetMat.roughness,
+                metalness: targetMat.metalness,
+                toneMapped: targetMat.toneMapped
+              });
+            });
+          }
         }
       });
 
       materialRefs.current = collected;
-      console.log("✅ マテリアル対象数:", collected.length);
+      console.log("✅ 発光マテリアル対象数:", collected.length);
     }
 
     trySetup();
-  }, [modelRef, controls.rotationY]);
+  }, [modelRef, controls.rotationY, controls.emissiveIntensity, controls.roughness, controls.metalness]);
 
-  // Y軸回転の更新
-  useEffect(() => {
-    if (modelRef?.current) {
-      modelRef.current.rotation.y = controls.rotationY;
-    }
-  }, [modelRef, controls.rotationY]);
-
-  // フレーム毎に emissiveIntensity をイーズインで更新
+  // フレーム毎の更新（発光強度の確実な適用）
   useFrame(() => {
     materialRefs.current.forEach((mat) => {
-      const delta = controls.emissiveIntensity - mat.emissiveIntensity;
-      if (Math.abs(delta) > 0.01) {
-        mat.emissiveIntensity += delta * 0.2;
+      const targetIntensity = Number(controls.emissiveIntensity) || 7;
+      if (mat.emissiveIntensity !== targetIntensity) {
+        mat.emissiveIntensity = targetIntensity;
         mat.needsUpdate = true;
+        console.log("🔄 発光強度更新:", {
+          current: mat.emissiveIntensity,
+          target: targetIntensity
+        });
       }
     });
   });
 
-  // 他のパラメータは即時反映
+  // 他のマテリアル設定の更新
   useEffect(() => {
-    materialRefs.current.forEach((mat) => {
-      mat.roughness = controls.roughness;
-      mat.metalness = controls.metalness;
-      mat.envMapIntensity = controls.envMapIntensity;
-      mat.clearcoat = controls.clearcoat;
-      mat.iridescence = controls.iridescence;
-      mat.transmission = controls.transmission;
-      mat.thickness = controls.thickness;
-      mat.ior = controls.ior;
-      mat.opacity = controls.opacity;
-      mat.transparent = controls.opacity < 1;
-      mat.needsUpdate = true;
+    if (!modelRef?.current) return;
+    
+    modelRef.current.traverse((child) => {
+      if (child.isMesh && child.material) {
+        const materials = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
+        
+        materials.forEach((mat) => {
+          // 星以外のマテリアルのみ更新
+          if (child.name !== "Cone_Color_0" && !child.name.includes("Star")) {
+            Object.assign(mat, {
+              roughness: controls.roughness,
+              metalness: controls.metalness,
+              envMapIntensity: controls.envMapIntensity,
+              clearcoat: controls.clearcoat,
+              iridescence: controls.iridescence,
+              transmission: controls.transmission,
+              thickness: controls.thickness,
+              ior: controls.ior,
+              opacity: controls.opacity,
+              transparent: controls.opacity < 1,
+              needsUpdate: true
+            });
+          }
+        });
+      }
     });
-  }, [controls]);
+  }, [modelRef, controls.roughness, controls.metalness, controls.envMapIntensity, 
+      controls.clearcoat, controls.iridescence, controls.transmission, 
+      controls.thickness, controls.ior, controls.opacity]);
 
   return null;
 });
