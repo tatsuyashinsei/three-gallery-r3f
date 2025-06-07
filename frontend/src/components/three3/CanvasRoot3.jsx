@@ -12,20 +12,95 @@ import CameraController from "./CameraController";
 import BloomPostProcessing from "./BloomPostProcessing";
 import { useBeamStore } from "@/store/useBeamStore";
 
+// グローバルフラグで演出の重複実行を防ぐ
+let globalToneMappingStartTime = null;
+let isGlobalToneMappingActive = false;
+
 // 🔧 exposure のアニメーション管理
 function ToneMappingController() {
-  const { gl } = useThree();
+  const { gl, scene } = useThree();
+  const startTimeRef = useRef(null);
+  const isActiveRef = useRef(true);
 
   useEffect(() => {
+    // より確実にレンダラー設定を適用
     gl.toneMapping = THREE.ACESFilmicToneMapping;
-    gl.toneMappingExposure = 0.0;
+    gl.toneMappingExposure = 0.0;  // 初期値をゼロに
     gl.outputColorSpace = THREE.SRGBColorSpace;
-    console.log("🟢 ToneMapping 初期化完了");
-  }, [gl]);
+    
+    // シーンも同様に設定
+    scene.background = new THREE.Color(0x000000);  // 完全に黒い背景
+    
+    // グローバル制御で一度だけ開始
+    if (!isGlobalToneMappingActive) {
+      globalToneMappingStartTime = performance.now();
+      isGlobalToneMappingActive = true;
+      startTimeRef.current = globalToneMappingStartTime;
+      console.log("🟢 ToneMapping 初期化完了 - 13秒演出開始 (グローバル制御)", { 
+        startTime: startTimeRef.current,
+        initialExposure: gl.toneMappingExposure,
+        renderer: gl,
+        toneMapping: gl.toneMapping
+      });
+    } else {
+      startTimeRef.current = globalToneMappingStartTime;
+      console.log("🔄 ToneMapping 既存インスタンス検出 - 継続", {
+        existingStartTime: globalToneMappingStartTime
+      });
+    }
+    
+    isActiveRef.current = true;
+
+    // クリーンアップ関数
+    return () => {
+      isActiveRef.current = false;
+      console.log("🔄 ToneMappingController クリーンアップ");
+    };
+  }, [gl, scene]);
 
   useFrame(() => {
-    if (gl.toneMappingExposure < 0.5) {
-      gl.toneMappingExposure += 0.00028;
+    if (!startTimeRef.current || !isActiveRef.current) return;
+
+    const elapsed = performance.now() - startTimeRef.current;
+    const exposureDuration = 13000;  // 13秒間の演出
+    const exposureTarget = 1.0;      // より明るい目標値
+
+    // イーズアウト関数（二次関数）
+    const easeOutQuad = (t) => t * (2 - t);
+
+    if (elapsed < exposureDuration) {
+      const progress = elapsed / exposureDuration;
+      const newExposure = THREE.MathUtils.lerp(
+        0,
+        exposureTarget,
+        easeOutQuad(progress)
+      );
+      
+      // より確実に設定
+      gl.toneMappingExposure = newExposure;
+      
+      // デバッグログ（毎フレーム出力して確実に動作確認）
+      if (Math.floor(elapsed / 500) % 2 === 0 && elapsed % 500 < 16.67) {
+        console.log(`🌅 ToneMapping進行中: ${(elapsed/1000).toFixed(1)}s / ${exposureDuration/1000}s`, {
+          progress: (progress * 100).toFixed(1) + '%',
+          exposure: newExposure.toFixed(3),
+          glExposure: gl.toneMappingExposure,
+          frameTime: performance.now()
+        });
+      }
+    } else {
+      gl.toneMappingExposure = exposureTarget;
+      if (elapsed - exposureDuration < 100) { // 一度だけログ出力
+        console.log("✅ ToneMapping演出完了", { 
+          finalExposure: gl.toneMappingExposure,
+          totalTime: (elapsed/1000).toFixed(1) + 's'
+        });
+        // 演出完了後はグローバルフラグをリセット（次回のために）
+        setTimeout(() => {
+          isGlobalToneMappingActive = false;
+          globalToneMappingStartTime = null;
+        }, 1000);
+      }
     }
   });
 
@@ -295,9 +370,26 @@ export default function CanvasRoot3() {
 
   return (
     <Canvas
-      gl={{ antialias: true }}
+      gl={{ 
+        antialias: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 0.0,
+        outputColorSpace: THREE.SRGBColorSpace
+      }}
       camera={{ position: [-180, 5, -50], fov: 75 }}
       style={{ width: "100%", height: "100vh", background: "black" }}
+      onCreated={({ gl, scene }) => {
+        // Canvas作成時に確実に設定
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 0.0;
+        gl.outputColorSpace = THREE.SRGBColorSpace;
+        scene.background = new THREE.Color(0x000000);
+        console.log("🎬 Canvas初期化: レンダラー設定完了", {
+          toneMapping: gl.toneMapping,
+          toneMappingExposure: gl.toneMappingExposure,
+          outputColorSpace: gl.outputColorSpace
+        });
+      }}
     >
       <ToneMappingController />
       <SceneContent3 modelRef={modelRef} />
