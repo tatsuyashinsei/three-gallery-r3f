@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Palette, FileText, Briefcase, MessageSquare } from "lucide-react";
+import { Palette, FileText, Briefcase, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import AnimatedTitle from "../components/AnimatedTitle";
 
 const MainPage = () => {
@@ -14,9 +14,11 @@ const MainPage = () => {
             alt="slide 1"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-            <a href="#slide3" className="btn btn-circle">
+            <a href="#slide3" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronLeft size={20} />
             </a>
-            <a href="#slide2" className="btn btn-circle">              
+            <a href="#slide2" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronRight size={20} />
             </a>
           </div>
         </div>
@@ -28,9 +30,11 @@ const MainPage = () => {
             alt="slide 2"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-            <a href="#slide1" className="btn btn-circle">              
+            <a href="#slide1" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronLeft size={20} />
             </a>
-            <a href="#slide3" className="btn btn-circle">              
+            <a href="#slide3" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronRight size={20} />
             </a>
           </div>
         </div>
@@ -42,9 +46,11 @@ const MainPage = () => {
             alt="slide 3"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-            <a href="#slide2" className="btn btn-circle">              
+            <a href="#slide2" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronLeft size={20} />
             </a>
-            <a href="#slide1" className="btn btn-circle">              
+            <a href="#slide1" className="btn btn-circle bg-white/20 hover:bg-white/30 border-white/30 text-white">
+              <ChevronRight size={20} />
             </a>
           </div>
         </div>
