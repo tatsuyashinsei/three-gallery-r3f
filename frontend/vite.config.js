@@ -33,6 +33,21 @@ export default defineConfig({
       }
     }
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false, // 本番環境ではソースマップを無効化
+    minify: 'terser', // より良い圧縮のためterserを使用
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          ui: ['lucide-react', 'react-hot-toast']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000, // チャンクサイズの警告を1MBに設定
+  },
   resolve: {
     alias: {
       "@": path.resolve(fileURLToPath(new URL('.', import.meta.url)), "src"),

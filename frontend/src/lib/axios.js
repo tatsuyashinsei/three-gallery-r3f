@@ -15,9 +15,12 @@ export const axiosInstance = axios.create({
 // リクエストインターセプター：フィンガープリントとAuthorizationヘッダーを追加
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log(`🚀 Making request to: ${config.baseURL}${config.url}`);
-    console.log(`🚀 Request method: ${config.method}`);
-    console.log(`🚀 Request headers:`, config.headers);
+    // 開発環境でのみデバッグログを表示
+    if (import.meta.env.MODE === "development") {
+      console.log(`🚀 Making request to: ${config.baseURL}${config.url}`);
+      console.log(`🚀 Request method: ${config.method}`);
+      console.log(`🚀 Request headers:`, config.headers);
+    }
     
     const fingerprint = generateFingerprint();
     config.headers['x-client-fingerprint'] = fingerprint;
@@ -26,13 +29,17 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log(`🔑 Token added to request`);
+      if (import.meta.env.MODE === "development") {
+        console.log(`🔑 Token added to request`);
+      }
     }
     
     return config;
   },
   (error) => {
-    console.error('❌ Request interceptor error:', error);
+    if (import.meta.env.MODE === "development") {
+      console.error('❌ Request interceptor error:', error);
+    }
     return Promise.reject(error);
   }
 );
@@ -40,19 +47,23 @@ axiosInstance.interceptors.request.use(
 // レスポンスインターセプター：エラーハンドリングを改善
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log(`✅ Response received:`, response.status, response.statusText);
+    if (import.meta.env.MODE === "development") {
+      console.log(`✅ Response received:`, response.status, response.statusText);
+    }
     return response;
   },
   (error) => {
-    console.error('❌ Response error:', error);
-    if (error.response) {
-      console.error('❌ Error response data:', error.response.data);
-      console.error('❌ Error response status:', error.response.status);
-      console.error('❌ Error response headers:', error.response.headers);
-    } else if (error.request) {
-      console.error('❌ No response received:', error.request);
-    } else {
-      console.error('❌ Error setting up request:', error.message);
+    if (import.meta.env.MODE === "development") {
+      console.error('❌ Response error:', error);
+      if (error.response) {
+        console.error('❌ Error response data:', error.response.data);
+        console.error('❌ Error response status:', error.response.status);
+        console.error('❌ Error response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('❌ No response received:', error.request);
+      } else {
+        console.error('❌ Error setting up request:', error.message);
+      }
     }
     return Promise.reject(error);
   }

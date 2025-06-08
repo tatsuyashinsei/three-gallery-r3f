@@ -8,10 +8,13 @@ import notionRoutes from "./routes/notion.route.js";
 
 import express from "express";
 //------------------------------------
-console.log(
-  "[NOTION_SECRET (bytes)]",
-  [...process.env.NOTION_SECRET].map((c) => c.charCodeAt(0))
-);
+// 開発環境でのみデバッグログを表示
+if (process.env.NODE_ENV !== "production") {
+  console.log(
+    "[NOTION_SECRET (bytes)]",
+    [...process.env.NOTION_SECRET].map((c) => c.charCodeAt(0))
+  );
+}
 
 //------------------------------------
 import cookieParser from "cookie-parser";
@@ -34,21 +37,22 @@ import { app, server } from "./lib/socket.js";
 dotenv.config();
 
 //------------------------------------
-console.log("✅ NOTION_SECRET length:", process.env.NOTION_SECRET?.length);
-console.log(
-  "✅ NOTION_SECRET value:",
-  JSON.stringify(process.env.NOTION_SECRET)
-);
-
-
-console.log(
-  "✅ NOTION_SECRET:",
-  process.env.NOTION_SECRET?.slice(0, 12) + "..."
-);
-console.log("✅ NOTION_PAGE_ID:", process.env.NOTION_PAGE_ID);
+// 開発環境でのみデバッグログを表示
+if (process.env.NODE_ENV !== "production") {
+  console.log("✅ NOTION_SECRET length:", process.env.NOTION_SECRET?.length);
+  console.log(
+    "✅ NOTION_SECRET value:",
+    JSON.stringify(process.env.NOTION_SECRET)
+  );
+  console.log(
+    "✅ NOTION_SECRET:",
+    process.env.NOTION_SECRET?.slice(0, 12) + "..."
+  );
+  console.log("✅ NOTION_PAGE_ID:", process.env.NOTION_PAGE_ID);
+}
 //------------------------------------
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT ?? 5001;
 const __dirname = path.resolve();
 
 app.use(express.json({ limit: '50mb' }));
@@ -56,22 +60,28 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(cookieParser());
 
-// CORS設定の前にデバッグミドルウェアを追加
-app.use((req, res, next) => {
-    console.log(`🌐 Request: ${req.method} ${req.url}`);
-    console.log(`🌐 Origin: ${req.headers.origin}`);
-    console.log(`🌐 Headers:`, req.headers);
-    next();
-});
+// 開発環境でのみデバッグミドルウェアを追加
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+      console.log(`🌐 Request: ${req.method} ${req.url}`);
+      console.log(`🌐 Origin: ${req.headers.origin}`);
+      console.log(`🌐 Headers:`, req.headers);
+      next();
+  });
+}
 
 app.use(
     cors({
         origin: function(origin, callback) {
-            console.log(`🔍 CORS Check - Origin: ${origin}`);
+            if (process.env.NODE_ENV !== "production") {
+              console.log(`🔍 CORS Check - Origin: ${origin}`);
+            }
             
             // Allow requests with no origin (like mobile apps or curl requests)
             if(!origin) {
-                console.log("✅ No origin - allowing request");
+                if (process.env.NODE_ENV !== "production") {
+                  console.log("✅ No origin - allowing request");
+                }
                 return callback(null, true);
             }
             
@@ -87,15 +97,21 @@ app.use(
                 "http://192.168.3.10:5173",
                 "http://192.168.3.10:5174",
                 "http://192.168.3.10:5175",
-                "http://192.168.3.10:5001"
-            ];
+                "http://192.168.3.10:5001",
+                // 本番環境のドメインを追加（必要に応じて）
+                process.env.FRONTEND_URL
+            ].filter(Boolean);
             
             if(allowedOrigins.indexOf(origin) !== -1){
-                console.log(`✅ Origin allowed: ${origin}`);
+                if (process.env.NODE_ENV !== "production") {
+                  console.log(`✅ Origin allowed: ${origin}`);
+                }
                 return callback(null, true);
             } else {
-                console.log(`❌ Origin rejected: ${origin}`);
-                console.log(`❌ Allowed origins:`, allowedOrigins);
+                if (process.env.NODE_ENV !== "production") {
+                  console.log(`❌ Origin rejected: ${origin}`);
+                  console.log(`❌ Allowed origins:`, allowedOrigins);
+                }
                 return callback(new Error('Not allowed by CORS'), false);
             }
         },
@@ -116,7 +132,9 @@ app.use(
 
 // プリフライトリクエストの明示的な処理
 app.options('*', (req, res) => {
-    console.log(`🚀 Preflight request for: ${req.url}`);
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`🚀 Preflight request for: ${req.url}`);
+    }
     res.status(200).end();
 });
 
@@ -131,17 +149,20 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
   });
 }
     
 server.listen(PORT, () => {
-    console.log("server is running on PORT" + PORT);
+    console.log("server is running on PORT " + PORT);
     connectDB().then(() => console.log("Database is connected"));
 });
 
-console.log("環境変数 PORT:", process.env.PORT);
-console.log("環境変数 MONGODB_URI:", process.env.MONGODB_URI);
-console.log("✅ CLOUDINARY_CLOUD_NAME:", process.env.CLOUDINARY_CLOUD_NAME);
-console.log("✅ CLOUDINARY_API_KEY:", process.env.CLOUDINARY_API_KEY);
-console.log("✅ CLOUDINARY_API_SECRET:", process.env.CLOUDINARY_API_SECRET?.slice(0, 8) + "...");
+// 開発環境でのみ環境変数をログ出力
+if (process.env.NODE_ENV !== "production") {
+  console.log("環境変数 PORT:", process.env.PORT);
+  console.log("環境変数 MONGODB_URI:", process.env.MONGODB_URI ? "設定済み" : "未設定");
+  console.log("✅ CLOUDINARY_CLOUD_NAME:", process.env.CLOUDINARY_CLOUD_NAME ? "設定済み" : "未設定");
+  console.log("✅ CLOUDINARY_API_KEY:", process.env.CLOUDINARY_API_KEY ? "設定済み" : "未設定");
+  console.log("✅ CLOUDINARY_API_SECRET:", process.env.CLOUDINARY_API_SECRET ? "設定済み" : "未設定");
+}
