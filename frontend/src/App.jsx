@@ -1,21 +1,21 @@
 import Navbar from "./components/Navbar";
 
-import HomePage from "./pages/HomePage";
-import MainPage from "./pages/MainPage"; // ← 元 HomePage を改名
-import SignUpPage from "./pages/SignUpPage";
-import LoginPage from "./pages/LoginPage";
-import SettingsPage from "./pages/SettingsPage";
-import ProfilePage from "./pages/ProfilePage";
-import AboutPage from "./pages/AboutPage";
-import BoardPage from "./pages/BoardPage";
-import ThreadPage from "./pages/ThreadPage";
+import HomePage from "./pages/HomePage.jsx";
+import MainPage from "./pages/MainPage.jsx"; // ← 元 HomePage を改名
+import SignUpPage from "./pages/SignUpPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
+import AboutPage from "./pages/AboutPage.jsx";
+import BoardPage from "./pages/BoardPage.jsx";
+import ThreadPage from "./pages/ThreadPage.jsx";
 
-import GalleryPage from "./pages/GalleryPage";
-import GalleryCanvas1_1 from "./pages/GalleryCanvas1_1";
-import GalleryCanvas2 from "./pages/GalleryCanvas2";
-import GalleryCanvas3 from "./pages/GalleryCanvas3";
-import GalleryCanvas4 from "./pages/GalleryCanvas4"; // ✅ 追加
-import GalleryCanvas3_1 from "./pages/GalleryCanvas3_1";
+import GalleryPage from "./pages/GalleryPage.jsx";
+import GalleryCanvas1_1 from "./pages/GalleryCanvas1_1.jsx";
+import GalleryCanvas2 from "./pages/GalleryCanvas2.jsx";
+import GalleryCanvas3 from "./pages/GalleryCanvas3.jsx";
+import GalleryCanvas4 from "./pages/GalleryCanvas4.jsx"; // ✅ 追加
+import GalleryCanvas3_1 from "./pages/GalleryCanvas3_1.jsx";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
@@ -26,8 +26,8 @@ import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
 import NotionArticleDetail from "./pages/NotionArticles/ArticleDetail";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
+import Blog from "./pages/Blog.jsx";
+import BlogPost from "./pages/BlogPost.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
