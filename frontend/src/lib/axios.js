@@ -8,9 +8,16 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// リクエストインターセプター：フィンガープリントをヘッダーに追加
+// リクエストインターセプター：フィンガープリントとAuthorizationヘッダーを追加
 axiosInstance.interceptors.request.use((config) => {
   const fingerprint = generateFingerprint();
   config.headers['x-client-fingerprint'] = fingerprint;
+  
+  // localStorageからトークンを取得してAuthorizationヘッダーに追加
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
   return config;
 });

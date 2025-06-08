@@ -3,8 +3,16 @@ import User from '../models/user.model.js';
 
 export const protectRoute = async (req, res, next) => {
     try {
-        const token = req.cookies.jwt;
+        // Cookieまたは Authorization ヘッダーからトークンを取得
+        let token = req.cookies.jwt;
+        
+        // Cookieにトークンがない場合、Authorization ヘッダーを確認
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+        
         console.log("🔐 Auth middleware - Token present:", !!token);
+        console.log("🔐 Token source:", req.cookies.jwt ? "Cookie" : "Authorization Header");
 
         if (!token) {
             console.log("❌ Auth failed: No token provided");

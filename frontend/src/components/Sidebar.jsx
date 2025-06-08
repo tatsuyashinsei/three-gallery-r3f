@@ -8,18 +8,20 @@ const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
     useChatStore();
 
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser, isCheckingAuth } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+    if (!isCheckingAuth && authUser) {
+      getUsers();
+    }
+  }, [authUser, isCheckingAuth]);
 
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
     : users;
 
-  if (isUsersLoading) return <SidebarSkeleton />;
+  if (isCheckingAuth || !authUser || isUsersLoading) return <SidebarSkeleton />;
 
   return (
     <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
