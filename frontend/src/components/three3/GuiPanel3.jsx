@@ -30,6 +30,8 @@ export default function GuiPanel3({
   cameraControllerRef,
   bloomRef, // ブルーム用のref
   onEmissiveIntensityChange,
+  cometControls,
+  handleCometControlsChange,
 }) {
   // リセット用のrefs
   const modelPanelRef = useRef();
@@ -152,6 +154,8 @@ export default function GuiPanel3({
         modelRef={modelRef} 
         testLight={testLight}
         onEmissiveIntensityChange={handleEmissiveIntensityChange}
+        cometControls={cometControls}
+        handleCometControlsChange={handleCometControlsChange}
       />
       <MaterialPanel3 
         ref={materialPanelRef}

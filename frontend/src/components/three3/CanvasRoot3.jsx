@@ -160,6 +160,7 @@ function BeamOriginTracker({ modelRef, setBeamPosition, setIsModelReady }) {
               frame: frameCount.current
             });
           }
+
         }
       } else if (frameCount.current <= 30 && frameCount.current % 10 === 0) {
         console.log("⏳ [BeamOriginTracker] Waiting for cone mesh...", {
@@ -191,6 +192,38 @@ export default function CanvasRoot3() {
   // GUI状態
   const [emissiveIntensity, setEmissiveIntensity] = useState(17.8);
 
+  // Comet Controls の状態管理
+  const [cometControls, setCometControls] = useState({
+    emission: 17.8,
+    greenRotationX: 105,
+    greenRotationY: -180,
+    greenRotationZ: 103,
+    orangeRotationX: -105,
+    orangeRotationY: -172,
+    orangeRotationZ: -70,
+  });
+
+  const handleCometControlsChange = (newControls) => {
+    setCometControls(prev => ({ ...prev, ...newControls }));
+  };
+
+  // ビーム方向の計算
+  const greenBeamDirection = useMemo(() => {
+    const direction = new THREE.Vector3(0, 0, 1);
+    direction.applyAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(cometControls.greenRotationX));
+    direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(cometControls.greenRotationY));
+    direction.applyAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(cometControls.greenRotationZ));
+    return direction;
+  }, [cometControls.greenRotationX, cometControls.greenRotationY, cometControls.greenRotationZ]);
+
+  const orangeBeamDirection = useMemo(() => {
+    const direction = new THREE.Vector3(0, 0, 1);
+    direction.applyAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(cometControls.orangeRotationX));
+    direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(cometControls.orangeRotationY));
+    direction.applyAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(cometControls.orangeRotationZ));
+    return direction;
+  }, [cometControls.orangeRotationX, cometControls.orangeRotationY, cometControls.orangeRotationZ]);
+
   // ビームデータ計算
   const { greenBeamData, orangeBeamData } = useMemo(() => {
     if (!beamPosition) {
@@ -203,14 +236,14 @@ export default function CanvasRoot3() {
     return {
       greenBeamData: {
         start: beamPosition.clone(),
-        end: beamPosition.clone().add(new THREE.Vector3(50, 10, 20))
+        end: beamPosition.clone().add(greenBeamDirection.clone().multiplyScalar(1000))
       },
       orangeBeamData: {
         start: beamPosition.clone(),
-        end: beamPosition.clone().add(new THREE.Vector3(45, 15, 25))
+        end: beamPosition.clone().add(orangeBeamDirection.clone().multiplyScalar(1000))
       }
     };
-  }, [beamPosition]);
+  }, [beamPosition, greenBeamDirection, orangeBeamDirection]);
 
   // ビーム表示の遅延制御
   useEffect(() => {
@@ -332,9 +365,12 @@ export default function CanvasRoot3() {
           bloomRef={bloomRef}
           onEmissiveIntensityChange={setEmissiveIntensity}
           isLoading={isLoading}
+          cometControls={cometControls}
+          handleCometControlsChange={handleCometControlsChange}
         />
       </Canvas>
     </>
   );
 }
+
 

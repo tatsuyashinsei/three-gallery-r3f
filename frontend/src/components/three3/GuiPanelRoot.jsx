@@ -15,7 +15,9 @@ export default function GuiPanelRoot({
   cameraControllerRef, 
   bloomRef, 
   onEmissiveIntensityChange,
-  isLoading = false
+  isLoading = false,
+  cometControls,
+  handleCometControlsChange
 }) {
   const [environmentTexture, setEnvTexture] = useState(null);
 
@@ -102,6 +104,8 @@ export default function GuiPanelRoot({
           cameraControllerRef={cameraControllerRef}
           bloomRef={bloomRef}
           onEmissiveIntensityChange={onEmissiveIntensityChange}
+          cometControls={cometControls}
+          handleCometControlsChange={handleCometControlsChange}
         />
       )}
     </>

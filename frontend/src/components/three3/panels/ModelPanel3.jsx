@@ -20,7 +20,7 @@ const INITIAL_VALUES = {
   opacity: 1.00,          // 不透明度
 };
 
-const ModelPanel3 = forwardRef(({ modelRef, onEmissiveIntensityChange }, ref) => {
+const ModelPanel3 = forwardRef(({ modelRef, onEmissiveIntensityChange, cometControls, handleCometControlsChange }, ref) => {
   const materialRefs = useRef([]);
 
   const [controls, set] = useControls(() => ({
@@ -51,6 +51,103 @@ const ModelPanel3 = forwardRef(({ modelRef, onEmissiveIntensityChange }, ref) =>
       thickness: { value: INITIAL_VALUES.thickness, min: 0, max: 10, label: "厚み" },
       ior: { value: INITIAL_VALUES.ior, min: 1, max: 2.5, label: "屈折率" },
       opacity: { value: INITIAL_VALUES.opacity, min: 0, max: 1, label: "不透明度" },
+      
+      // Comet Controls セクション
+      "🌟 Comet Controls": folder({
+        emission: {
+          value: cometControls?.emission || 17.8,
+          min: 0,
+          max: 30,
+          step: 0.1,
+          label: "Emission",
+          onChange: (value) => {
+            if (handleCometControlsChange) {
+              handleCometControlsChange({ emission: value });
+            }
+            // 発光強度も同時に更新
+            if (onEmissiveIntensityChange) {
+              onEmissiveIntensityChange(value);
+            }
+          }
+        },
+        "緑帯コントロール": folder({
+          greenRotationX: {
+            value: cometControls?.greenRotationX || 105,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "X回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ greenRotationX: value });
+              }
+            }
+          },
+          greenRotationY: {
+            value: cometControls?.greenRotationY || -180,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "Y回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ greenRotationY: value });
+              }
+            }
+          },
+          greenRotationZ: {
+            value: cometControls?.greenRotationZ || 103,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "Z回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ greenRotationZ: value });
+              }
+            }
+          },
+        }, { collapsed: true }),
+        
+        "黄帯コントロール": folder({
+          orangeRotationX: {
+            value: cometControls?.orangeRotationX || -105,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "X回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ orangeRotationX: value });
+              }
+            }
+          },
+          orangeRotationY: {
+            value: cometControls?.orangeRotationY || -172,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "Y回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ orangeRotationY: value });
+              }
+            }
+          },
+          orangeRotationZ: {
+            value: cometControls?.orangeRotationZ || -70,
+            min: -360,
+            max: 360,
+            step: 1,
+            label: "Z回転",
+            onChange: (value) => {
+              if (handleCometControlsChange) {
+                handleCometControlsChange({ orangeRotationZ: value });
+              }
+            }
+          },
+        }, { collapsed: true }),
+      }, { collapsed: true }),
     }, { collapsed: true })
   }));
 

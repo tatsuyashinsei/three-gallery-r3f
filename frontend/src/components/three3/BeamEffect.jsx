@@ -10,7 +10,7 @@ import { createBeamGeometry } from "./Beems/BeamGeometry";
 import { createBeamMaterial } from "./Beems/BeamMaterial";
 import { getColorFromType, getYOffsetFromType } from "./Beems/beamUtils";
 
-const PARTICLE_COUNT = 10400;  // 8000 * 1.3 = 10400（30%増）
+const PARTICLE_COUNT = 200000;  // パーティクルの数
 
 export default function BeamEffect({
   type = "green",
