@@ -52,5 +52,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(fileURLToPath(new URL('.', import.meta.url)), "src"),
     },
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'], // 明示的に拡張子を指定
   },
 });
