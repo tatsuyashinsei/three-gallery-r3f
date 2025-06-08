@@ -147,31 +147,77 @@ app.use("/api/notion", notionRoutes);
 //------------------------------------
 
 if (process.env.NODE_ENV === "production") {
-  // Render環境での正しいパス設定
-  const staticPath = path.join(__dirname, "../../frontend/dist");
-  const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+  // Render環境でのファイル構造を詳細に調査
+  console.log("🔍 Current working directory:", process.cwd());
+  console.log("🔍 __dirname:", __dirname);
   
-  console.log("📁 Static path:", staticPath);
-  console.log("📄 Index path:", indexPath);
+  // 可能性のあるパスをすべて確認
+  const possiblePaths = [
+    path.join(__dirname, "../frontend/dist"),
+    path.join(__dirname, "../../frontend/dist"),
+    path.join(__dirname, "../../../frontend/dist"),
+    path.join(process.cwd(), "frontend/dist"),
+    path.join(process.cwd(), "../frontend/dist"),
+    path.join("/opt/render/project/src/frontend/dist"),
+    path.join("/opt/render/project/frontend/dist")
+  ];
   
-  // 静的ファイルの存在確認
-  if (fs.existsSync(staticPath)) {
-    console.log("✅ Static directory exists");
-  } else {
-    console.log("❌ Static directory not found");
-  }
-  
-  if (fs.existsSync(indexPath)) {
-    console.log("✅ Index.html exists");
-  } else {
-    console.log("❌ Index.html not found");
-  }
-  
-  app.use(express.static(staticPath));
-
-  app.get("*", (req, res) => {
-    res.sendFile(indexPath);
+  console.log("🔍 Checking possible static paths:");
+  possiblePaths.forEach((testPath, index) => {
+    const exists = fs.existsSync(testPath);
+    console.log(`${index + 1}. ${testPath} - ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
+    
+    if (exists) {
+      // ディレクトリの内容を確認
+      try {
+        const files = fs.readdirSync(testPath);
+        console.log(`   📁 Contents: ${files.join(', ')}`);
+      } catch (err) {
+        console.log(`   ❌ Error reading directory: ${err.message}`);
+      }
+    }
   });
+  
+  // 実際に存在するパスを見つける
+  const validStaticPath = possiblePaths.find(testPath => fs.existsSync(testPath));
+  
+  if (validStaticPath) {
+    const indexPath = path.join(validStaticPath, "index.html");
+    console.log("✅ Using static path:", validStaticPath);
+    console.log("✅ Index path:", indexPath);
+    
+    if (fs.existsSync(indexPath)) {
+      console.log("✅ Index.html found!");
+      
+      app.use(express.static(validStaticPath));
+      
+      app.get("*", (req, res) => {
+        console.log(`📄 Serving index.html for: ${req.url}`);
+        res.sendFile(indexPath);
+      });
+    } else {
+      console.log("❌ Index.html not found in valid static path");
+    }
+  } else {
+    console.log("❌ No valid static path found");
+    
+    // フォールバック: 簡単なHTMLレスポンス
+    app.get("*", (req, res) => {
+      res.send(`
+        <html>
+          <body>
+            <h1>Static files not found</h1>
+            <p>Current directory: ${process.cwd()}</p>
+            <p>__dirname: ${__dirname}</p>
+            <p>Checked paths:</p>
+            <ul>
+              ${possiblePaths.map(p => `<li>${p} - ${fs.existsSync(p) ? 'EXISTS' : 'NOT FOUND'}</li>`).join('')}
+            </ul>
+          </body>
+        </html>
+      `);
+    });
+  }
 }
     
 server.listen(PORT, () => {
