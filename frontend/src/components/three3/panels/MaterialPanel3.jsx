@@ -13,6 +13,7 @@ const INITIAL_VALUES = {
   transmission: 0.0,
   thickness: 1.0,
   ior: 1.5,
+  opacity: 1.0,
 };
 
 const MaterialPanel3 = forwardRef(({ floor1, floor2 }, ref) => {
@@ -31,6 +32,13 @@ const MaterialPanel3 = forwardRef(({ floor1, floor2 }, ref) => {
         max: 80,
         step: 0.1,
         label: "上下移動",
+      },
+      opacity: {
+        value: INITIAL_VALUES.opacity,
+        min: 0,
+        max: 1,
+        step: 0.01,
+        label: "不透明度",
       },
       envMapIntensity: { value: INITIAL_VALUES.envMapIntensity, min: 0, max: 1, label: "環境強度" },
       roughness: { value: INITIAL_VALUES.roughness, min: 0, max: 1, label: "目の粗さ" },
@@ -60,6 +68,7 @@ const MaterialPanel3 = forwardRef(({ floor1, floor2 }, ref) => {
         transmission: INITIAL_VALUES.transmission,
         thickness: INITIAL_VALUES.thickness,
         ior: INITIAL_VALUES.ior,
+        opacity: INITIAL_VALUES.opacity,
       });
       
       console.log("✅ [MaterialPanel3] ボード設定リセット完了");
@@ -100,6 +109,8 @@ const MaterialPanel3 = forwardRef(({ floor1, floor2 }, ref) => {
       mat.transmission = controls.transmission;
       mat.thickness = controls.thickness;
       mat.ior = controls.ior;
+      mat.opacity = controls.opacity;
+      mat.transparent = controls.opacity < 1;
       mat.needsUpdate = true;
     });
   }, [
@@ -115,6 +126,7 @@ const MaterialPanel3 = forwardRef(({ floor1, floor2 }, ref) => {
     controls.transmission,
     controls.thickness,
     controls.ior,
+    controls.opacity,
   ]);
 
   return null;
