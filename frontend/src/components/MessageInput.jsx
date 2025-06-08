@@ -9,19 +9,108 @@ const MessageInput = () => {
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
 
-  const handleImageChange = (e) => {
+  const compressImage = (file, maxWidth = 1024, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = document.createElement('img'); // ← HTMLImageElement を明示的に作成
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        console.log("🗜️ Image compressed:", {
+          originalSize: file.size,
+          compressedLength: compressedDataUrl.length,
+          reduction: ((file.size - compressedDataUrl.length) / file.size * 100).toFixed(1) + '%'
+        });
+        
+        resolve(compressedDataUrl);
+      };
+      
+      img.onerror = () => {
+        console.error("❌ Error loading image for compression");
+        resolve(null);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
+    
+    console.log("📁 Selected file:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified
+    });
+
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-    // copied code.
+    // Check file size (limit to 30MB)
+    if (file.size > 30 * 1024 * 1024) {
+      toast.error("Image file is too large. Please select a file smaller than 30MB.");
+      return;
+    }
+
+    try {
+      // Compress image if it's larger than 1MB
+      let imageData;
+      if (file.size > 1024 * 1024) {
+        console.log("🗜️ Compressing large image...");
+        imageData = await compressImage(file);
+        
+        // 圧縮に失敗した場合は元の画像を使用
+        if (!imageData) {
+          console.log("🔄 Compression failed, using original image");
+          const reader = new FileReader();
+          imageData = await new Promise((resolve) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+          });
+        }
+      } else {
+        // For smaller images, use original
+        const reader = new FileReader();
+        imageData = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      if (!imageData) {
+        throw new Error("Failed to process image file");
+      }
+      
+      console.log("📸 Image processed:", {
+        resultLength: imageData.length,
+        dataType: imageData.substring(0, 30)
+      });
+      
+      setImagePreview(imageData);
+    } catch (error) {
+      console.error("❌ Error processing image:", error);
+      toast.error("Error processing image file");
+    }
   };
 
   const removeImage = () => {

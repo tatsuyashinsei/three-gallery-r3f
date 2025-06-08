@@ -189,7 +189,7 @@ export default function CanvasRoot3() {
   const [beamVisible, setBeamVisible] = useState(false);
 
   // GUI状態
-  const [emissiveIntensity, setEmissiveIntensity] = useState(7);
+  const [emissiveIntensity, setEmissiveIntensity] = useState(17.8);
 
   // ビームデータ計算
   const { greenBeamData, orangeBeamData } = useMemo(() => {
@@ -283,7 +283,7 @@ export default function CanvasRoot3() {
           gl.toneMappingExposure = 0.0;
           gl.outputColorSpace = THREE.SRGBColorSpace;
           scene.background = new THREE.Color(0x000000);
-          console.log("🎬 Canvas初期化: レンダラー設定完了", {
+          console.log("�� Canvas初期化: レンダラー設定完了", {
             toneMapping: gl.toneMapping,
             toneMappingExposure: gl.toneMappingExposure,
             outputColorSpace: gl.outputColorSpace

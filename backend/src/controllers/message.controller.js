@@ -41,11 +41,37 @@ export const sendMessage = async (req, res) => {
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
 
+        console.log("📨 SendMessage called:");
+        console.log("- Text:", text ? text.substring(0, 50) + "..." : "No text");
+        console.log("- Image:", image ? "Image data received (length: " + image.length + ")" : "No image");
+        console.log("- Receiver ID:", receiverId);
+        console.log("- Sender ID:", senderId);
+
         let imageUrl;
         if (image) {
-            // Upload base64 image to cloudinary
-            const uploadResponse = await cloudinary.uploader.upload(image);
-            imageUrl = uploadResponse.secure_url;
+            console.log("🖼️ Uploading image to Cloudinary...");
+            console.log("🖼️ Image data starts with:", image.substring(0, 50));
+            try {
+                // Upload base64 image to cloudinary
+                const uploadResponse = await cloudinary.uploader.upload(image, {
+                    resource_type: "auto",
+                    folder: "chat-images",
+                });
+                imageUrl = uploadResponse.secure_url;
+                console.log("✅ Image uploaded successfully:", imageUrl);
+                console.log("✅ Upload response details:", {
+                    public_id: uploadResponse.public_id,
+                    format: uploadResponse.format,
+                    width: uploadResponse.width,
+                    height: uploadResponse.height
+                });
+            } catch (cloudinaryError) {
+                console.error("❌ Cloudinary upload error details:");
+                console.error("- Error message:", cloudinaryError.message);
+                console.error("- Error code:", cloudinaryError.http_code);
+                console.error("- Full error:", cloudinaryError);
+                throw new Error("Image upload failed: " + cloudinaryError.message);
+            }
         }
 
         const newMessage = new Message({
@@ -55,16 +81,22 @@ export const sendMessage = async (req, res) => {
             image: imageUrl,
         });
 
+        console.log("💾 Saving message to database...");
         await newMessage.save();
+        console.log("✅ Message saved successfully");
 
         const receiverSocketId = getReceiverSocketId(receiverId);
         if (receiverSocketId) {
+            console.log("📡 Sending message via socket to:", receiverSocketId);
             io.to(receiverSocketId).emit("newMessage", newMessage);
+        } else {
+            console.log("📡 Receiver not online, skipping socket emission");
         }
 
         res.status(201).json(newMessage);
     } catch (error) {
-        console.log("Error in sendMessage controller: ", error.message);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("❌ Error in sendMessage controller:", error.message);
+        console.error("❌ Full error:", error);
+        res.status(500).json({ error: "Internal server error: " + error.message });
     }
 };

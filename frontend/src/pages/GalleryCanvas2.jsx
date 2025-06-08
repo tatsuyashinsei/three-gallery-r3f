@@ -12,20 +12,19 @@ const SceneContent = () => {
   const { camera, gl } = useThree();
   const raycaster = useRef(new THREE.Raycaster());
   const mouse = useRef(new THREE.Vector2());
-  const targetPos = useRef(new THREE.Vector3(0, 1, 0));
+  const targetPos = useRef(new THREE.Vector3(0, -2, 0)); // 初期位置をフロア下に設定
   const cubeRef = useRef();
   const cameraTarget = useRef(new THREE.Vector3(0, 1, 0));
   const floorRef = useRef();
   const cumulativeEuler = useRef(new THREE.Euler(0, 0, 0));
   const timeRef = useRef(0);
-  const cameraOffsetRef = useRef(new THREE.Vector3(0, 0, 0));
-  const randomTargetRef = useRef(new THREE.Vector3(0, 0, 0));
-  const lastChangeTimeRef = useRef(0);
+  const isMovingRef = useRef(false);
+  const shouldLookAtTargetRef = useRef(false);
+  const isInitialAnimationRef = useRef(true); // 初期演出フラグ
   
   // スクロール関連の状態
   const scrollRef = useRef(0);
-  const isLookAtActiveRef = useRef(true);
-  const cameraSwayRef = useRef(new THREE.Vector3(0, 0, 0));
+  const isScrollModeRef = useRef(false);
   const originalCameraPositionRef = useRef(new THREE.Vector3());
 
   // 🎛️ Leva コントロール
@@ -33,14 +32,9 @@ const SceneContent = () => {
     moveSpeed, 
     rotationSpeed, 
     cubeColor, 
-    restitution, 
-    swayAmount, 
-    swaySpeed,
-    cameraOffsetRange,
-    cameraChangeInterval,
+    restitution,
     cameraLagSpeed,
     scrollSensitivity,
-    cameraSwayAmount,
     lookAtToggleThreshold
   } = useControls({
     moveSpeed: {
@@ -57,34 +51,7 @@ const SceneContent = () => {
       step: 0.001,
       label: "回転スピード",
     },
-    swayAmount: {
-      value: 0.5,
-      min: 0,
-      max: 2,
-      step: 0.1,
-      label: "揺れ幅",
-    },
-    swaySpeed: {
-      value: 1,
-      min: 0.1,
-      max: 5,
-      step: 0.1,
-      label: "揺れスピード",
-    },
-    cameraOffsetRange: {
-      value: 4,
-      min: 0,
-      max: 15,
-      step: 0.5,
-      label: "カメラオフセット範囲",
-    },
-    cameraChangeInterval: {
-      value: 3,
-      min: 1,
-      max: 10,
-      step: 0.5,
-      label: "視点変更間隔(秒)",
-    },
+
     cameraLagSpeed: {
       value: 0.8,
       min: 0.1,
@@ -99,13 +66,7 @@ const SceneContent = () => {
       step: 0.001,
       label: "スクロール感度",
     },
-    cameraSwayAmount: {
-      value: 15,
-      min: 0,
-      max: 50,
-      step: 1,
-      label: "カメラ振り幅",
-    },
+
     lookAtToggleThreshold: {
       value: 100,
       min: 10,
@@ -122,13 +83,25 @@ const SceneContent = () => {
     originalCameraPositionRef.current.copy(camera.position);
   }, [camera]);
 
+  // 初期浮上演出の開始
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // 1秒後にフロア上に浮上開始
+      targetPos.current.set(0, 1, 0);
+      isMovingRef.current = true;
+      isInitialAnimationRef.current = true;
+      shouldLookAtTargetRef.current = true; // 初期演出中はカメラ追跡
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const handleWheel = (event) => {
       scrollRef.current += event.deltaY * scrollSensitivity;
       
-      // スクロール量に基づいてLookAtのオン/オフを決定
-      const scrollCycle = Math.floor(Math.abs(scrollRef.current) / lookAtToggleThreshold);
-      isLookAtActiveRef.current = scrollCycle % 2 === 0;
+      // スクロール操作があった場合、目標地点への注視を解除
+      shouldLookAtTargetRef.current = false;
     };
 
     const handleDblClick = (event) => {
@@ -140,6 +113,8 @@ const SceneContent = () => {
       if (intersects.length > 0) {
         targetPos.current.copy(intersects[0].point);
         targetPos.current.y = 1;
+        isMovingRef.current = true;
+        shouldLookAtTargetRef.current = true;
       }
     };
 
@@ -153,6 +128,8 @@ const SceneContent = () => {
       if (intersects.length > 0) {
         targetPos.current.copy(intersects[0].point);
         targetPos.current.y = 1;
+        isMovingRef.current = true;
+        shouldLookAtTargetRef.current = true;
       }
     };
 
@@ -171,69 +148,52 @@ const SceneContent = () => {
     if (cubeRef.current) {
       timeRef.current += delta;
       
-      // キューブの位置更新
-      const currentPos = cubeRef.current.translation();
-      const nextPos = new THREE.Vector3().lerpVectors(
-        currentPos,
-        targetPos.current,
-        moveSpeed,
-      );
-      
-      nextPos.x += Math.sin(timeRef.current * swaySpeed) * swayAmount;
-      cubeRef.current.setNextKinematicTranslation(nextPos);
-
-      if (isLookAtActiveRef.current) {
-        // LookAtモード：固定点を見つめる（Cubeは画面内を自由に移動）
-        if (timeRef.current - lastChangeTimeRef.current > cameraChangeInterval) {
-          // カメラの注視点を固定位置周辺でランダムに設定
-          randomTargetRef.current.set(
-            (Math.random() - 0.5) * cameraOffsetRange,
-            1 + (Math.random() - 0.5) * cameraOffsetRange * 0.5,
-            (Math.random() - 0.5) * cameraOffsetRange
-          );
-          lastChangeTimeRef.current = timeRef.current;
+      // キューブの位置更新（移動中のみ）
+      if (isMovingRef.current) {
+        const currentPos = cubeRef.current.translation();
+        const nextPos = new THREE.Vector3().lerpVectors(
+          currentPos,
+          targetPos.current,
+          moveSpeed,
+        );
+        
+        // 目標地点に近づいたら停止
+        const distance = currentPos.distanceTo(targetPos.current);
+        if (distance < 0.1) {
+          isMovingRef.current = false;
+                  // 初期演出が完了したらフラグをリセット
+        if (isInitialAnimationRef.current) {
+          isInitialAnimationRef.current = false;
+          shouldLookAtTargetRef.current = false; // 初期演出後はLookAt解除
         }
+          // 移動停止後も目標地点を見続ける
+        } else {
+          cubeRef.current.setNextKinematicTranslation(nextPos);
+        }
+      }
 
-        const microSway = new THREE.Vector3(
-          Math.sin(timeRef.current * 2.3) * 0.3,
-          Math.cos(timeRef.current * 1.8) * 0.2,
-          Math.sin(timeRef.current * 1.5) * 0.25
-        );
+      // スクロールモードの判定
+      const scrollCycle = Math.floor(Math.abs(scrollRef.current) / lookAtToggleThreshold);
+      isScrollModeRef.current = scrollCycle % 2 === 1;
 
-        cameraOffsetRef.current.lerp(
-          randomTargetRef.current.clone().add(microSway), 
-          delta * cameraLagSpeed
-        );
-        
-        // 固定された注視点を見る（Cubeの位置に依存しない）
-        const fixedLookAt = new THREE.Vector3(0, 1, 0).add(cameraOffsetRef.current);
-        cameraTarget.current.copy(fixedLookAt);
-        camera.lookAt(cameraTarget.current);
-        
-        // カメラ位置を徐々に元に戻す
-        camera.position.lerp(originalCameraPositionRef.current, delta * 0.5);
-        
-      } else {
-        // フリーカメラモード：カメラ自体を左右に振る + 注視点も変更
-        const swayTarget = new THREE.Vector3(
-          Math.sin(timeRef.current * 1.2) * cameraSwayAmount,
-          Math.sin(timeRef.current * 0.8) * cameraSwayAmount * 0.3,
-          Math.cos(timeRef.current * 0.9) * cameraSwayAmount * 0.5
-        );
-        
-        cameraSwayRef.current.lerp(swayTarget, delta * 2);
-        
-        const newCameraPos = originalCameraPositionRef.current.clone().add(cameraSwayRef.current);
-        camera.position.copy(newCameraPos);
-        
-        // 注視点もランダムに変更（Cubeから完全に独立）
+      // カメラ制御の優先度: スクロールモード > 目標地点注視
+      if (isScrollModeRef.current) {
+        // スクロールモード：注視点のみ動的に制御（カメラ位置はユーザーの操作を優先）
         const randomLookTarget = new THREE.Vector3(
-          Math.sin(timeRef.current * 0.4) * 20,
-          Math.cos(timeRef.current * 0.3) * 10,
-          Math.sin(timeRef.current * 0.5) * 15
+          Math.sin(timeRef.current * 0.4 + scrollRef.current * 0.005) * 18,
+          Math.cos(timeRef.current * 0.3 + scrollRef.current * 0.004) * 10,
+          Math.sin(timeRef.current * 0.5 + scrollRef.current * 0.006) * 15
         );
         camera.lookAt(randomLookTarget);
+        
+      } else if (shouldLookAtTargetRef.current) {
+        // 目標地点注視モード
+        cameraTarget.current.lerp(targetPos.current, delta * cameraLagSpeed);
+        camera.lookAt(cameraTarget.current);
+        
+        // ズームアップは自動で追跡しない（カメラ位置の自動復帰を削除）
       }
+      // どちらのモードでもない場合は固定視点を保つ
 
       // キューブの回転更新
       cumulativeEuler.current.y += rotationSpeed;
@@ -278,6 +238,7 @@ const SceneContent = () => {
         colliders="cuboid"
         friction={0.2}
         restitution={0}
+        position={[0, -2.5, 0]} // 初期位置をフロア下に設定
       >
         <mesh castShadow position={[0, -0.5, 0]}>
           <boxGeometry args={[1, 1, 1]} />

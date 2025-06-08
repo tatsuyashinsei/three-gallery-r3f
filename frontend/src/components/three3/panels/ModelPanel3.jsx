@@ -7,17 +7,17 @@ import * as THREE from "three";
 
 // 初期値を定数として定義
 const INITIAL_VALUES = {
-  rotationY: Math.PI / 2.35,
-  emissiveIntensity: 7,
-  roughness: 0.1,
-  metalness: 0.7,
-  envMapIntensity: 2.5,
-  clearcoat: 0.8,
-  iridescence: 0.0,
-  transmission: 0.0,
-  thickness: 1.0,
-  ior: 1.5,
-  opacity: 1.0,
+  rotationY: 1.34,        // 横回転
+  emissiveIntensity: 17.8, // 発光強度
+  roughness: 0.36,        // 目の粗さ
+  metalness: 0.08,        // 金属性
+  envMapIntensity: 3.30,  // 環境強度
+  clearcoat: 0.00,        // クリアコート
+  iridescence: 0.13,      // 玉虫色
+  transmission: 0.44,     // 透過率
+  thickness: 1.0,         // 厚み
+  ior: 1.31,              // 屈折率
+  opacity: 1.00,          // 不透明度
 };
 
 const ModelPanel3 = forwardRef(({ modelRef, onEmissiveIntensityChange }, ref) => {

@@ -47,8 +47,8 @@ console.log("✅ NOTION_PAGE_ID:", process.env.NOTION_PAGE_ID);
 
 const PORT = process.env.PORT;
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(cookieParser());
 app.use(
@@ -79,3 +79,6 @@ server.listen(PORT, () => {
 
 console.log("環境変数 PORT:", process.env.PORT);
 console.log("環境変数 MONGODB_URI:", process.env.MONGODB_URI);
+console.log("✅ CLOUDINARY_CLOUD_NAME:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("✅ CLOUDINARY_API_KEY:", process.env.CLOUDINARY_API_KEY);
+console.log("✅ CLOUDINARY_API_SECRET:", process.env.CLOUDINARY_API_SECRET?.slice(0, 8) + "...");

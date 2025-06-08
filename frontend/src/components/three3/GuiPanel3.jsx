@@ -61,7 +61,7 @@ export default function GuiPanel3({
 
     // 発光強度も初期値にリセット
     if (onEmissiveIntensityChange) {
-      onEmissiveIntensityChange(7);
+      onEmissiveIntensityChange(17.8); // 新しいデフォルト値
     }
 
     // 各パネルのリセット
