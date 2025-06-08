@@ -4,13 +4,13 @@ import AnimatedTitle from "../components/AnimatedTitle";
 
 const MainPage = () => {
   return (
-    <div className="min-h-screen bg-base-200 flex flex-col items-center justify-start p-6 space-y-10 pt-24">
+    <div className="min-h-screen bg-base-200 flex flex-col items-center justify-start p-6 space-y-10 pt-32">
       {/* スライダー */}
-      <div className="carousel w-full max-w-3xl rounded-xl shadow-lg overflow-hidden">
+      <div className="carousel w-full max-w-3xl rounded-xl shadow-lg overflow-hidden mt-4">
         <div id="slide1" className="carousel-item relative w-full">
           <img
             src="https://res.cloudinary.com/dxcotqkhe/image/upload/v1746264644/samples/imagecon-group.jpg"
-            className="w-full object-cover"
+            className="w-full h-64 sm:h-80 md:h-96 object-cover"
             alt="slide 1"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
@@ -26,7 +26,7 @@ const MainPage = () => {
         <div id="slide2" className="carousel-item relative w-full">
           <img
             src="https://res.cloudinary.com/dxcotqkhe/image/upload/v1746264643/samples/people/bicycle.jpg"
-            className="w-full object-cover"
+            className="w-full h-64 sm:h-80 md:h-96 object-cover"
             alt="slide 2"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
@@ -42,7 +42,7 @@ const MainPage = () => {
         <div id="slide3" className="carousel-item relative w-full">
           <img
             src="https://res.cloudinary.com/dxcotqkhe/image/upload/v1746264643/samples/animals/three-dogs.jpg"
-            className="w-full object-cover"
+            className="w-full h-64 sm:h-80 md:h-96 object-cover"
             alt="slide 3"
           />
           <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">

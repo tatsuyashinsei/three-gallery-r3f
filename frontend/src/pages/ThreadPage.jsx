@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { useBoardStore } from "../store/useBoardStore";
-import { ArrowLeft, Send, Clock, User } from "lucide-react";
+import { ArrowLeft, Send, Clock, User, MessageCircle } from "lucide-react";
 
 // 日付フォーマット用のヘルパー関数
 const formatTimeAgo = (date) => {
@@ -83,6 +83,16 @@ const ThreadPage = () => {
   return (
     <div className="min-h-screen bg-base-200 pt-20">
       <div className="max-w-4xl mx-auto p-4">
+        {/* チャットルームリンク */}
+        {authUser && (
+          <div className="mb-4">
+            <Link to="/" className="btn btn-secondary btn-sm">
+              <MessageCircle size={16} />
+              チャットルーム
+            </Link>
+          </div>
+        )}
+        
         {/* ヘッダー */}
         <div className="bg-base-100 rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
@@ -144,6 +154,9 @@ const ThreadPage = () => {
             {!authUser && (
               <span className="text-sm text-warning ml-2">
                 (ゲスト: 1日5回まで)
+                <Link to="/login" className="link link-primary ml-2">
+                  ログインして無制限で投稿する
+                </Link>
               </span>
             )}
           </h3>

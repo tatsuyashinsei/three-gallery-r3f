@@ -49,7 +49,7 @@ export default function AnimatedTitle({ text }) {
   return (
     <h1 
       ref={titleRef} 
-      className="text-6xl font-bold mb-12 text-white flex gap-1"
+      className="text-4xl sm:text-5xl font-bold mb-12 text-white flex gap-1"
     >
       {text.split('').map((char, index) => (
         <span
