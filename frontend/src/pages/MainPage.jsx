@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Palette, FileText, Briefcase, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
+import { Palette, FileText, Briefcase, MessageSquare, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import AnimatedTitle from "../components/AnimatedTitle";
 
 const MainPage = () => {
@@ -88,14 +88,21 @@ const MainPage = () => {
         </Link>
       </div>
 
-      {/* チャットログインリンク */}
-      <div className="mt-12">
+      {/* チャット・掲示板リンク */}
+      <div className="mt-12 flex gap-4 justify-center">
         <Link
           to="/login"
-          className="btn btn-outline btn-wide flex gap-2 items-center"
+          className="btn btn-outline flex gap-2 items-center"
         >
           <MessageSquare size={20} />
           チャット
+        </Link>
+        <Link
+          to="/board"
+          className="btn btn-outline flex gap-2 items-center"
+        >
+          <MessageCircle size={20} />
+          掲示板
         </Link>
       </div>
     </div>

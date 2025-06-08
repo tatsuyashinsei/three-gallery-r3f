@@ -7,6 +7,8 @@ import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AboutPage from "./pages/AboutPage";
+import BoardPage from "./pages/BoardPage";
+import ThreadPage from "./pages/ThreadPage";
 
 import GalleryPage from "./pages/GalleryPage";
 import GalleryCanvas1_1 from "./pages/GalleryCanvas1_1";
@@ -52,6 +54,8 @@ const App = () => {
         <Route path="/main" element={<MainPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/board" element={<BoardPage />} />
+        <Route path="/board/thread/:threadId" element={<ThreadPage />} />
 
         {/* ✅ Gallery 関連も全て未ログインでOK */}
         <Route path="/gallery" element={<GalleryPage />} />
