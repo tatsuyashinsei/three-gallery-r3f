@@ -7,6 +7,7 @@ import notionRoutes from "./routes/notion.route.js";
 //------------------------------------
 
 import express from "express";
+import fs from 'fs';
 //------------------------------------
 // 開発環境でのみデバッグログを表示
 if (process.env.NODE_ENV !== "production") {
@@ -146,10 +147,30 @@ app.use("/api/notion", notionRoutes);
 //------------------------------------
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  // Render環境での正しいパス設定
+  const staticPath = path.join(__dirname, "../../frontend/dist");
+  const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+  
+  console.log("📁 Static path:", staticPath);
+  console.log("📄 Index path:", indexPath);
+  
+  // 静的ファイルの存在確認
+  if (fs.existsSync(staticPath)) {
+    console.log("✅ Static directory exists");
+  } else {
+    console.log("❌ Static directory not found");
+  }
+  
+  if (fs.existsSync(indexPath)) {
+    console.log("✅ Index.html exists");
+  } else {
+    console.log("❌ Index.html not found");
+  }
+  
+  app.use(express.static(staticPath));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+    res.sendFile(indexPath);
   });
 }
     
