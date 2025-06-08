@@ -17,6 +17,8 @@ console.log(
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+import path from "path";
+
 import { connectDB } from "./lib/db.js";
 
 import authRoutes from "./routes/auth.route.js";
@@ -29,7 +31,7 @@ import { app, server } from "./lib/socket.js";
 // app.use("/api/notion/posts", notionPostsRouter); // 重複につきコメントアウト
 // // ------------------------------------
 
-// dotenv.config();
+dotenv.config();
 
 //------------------------------------
 console.log("✅ NOTION_SECRET length:", process.env.NOTION_SECRET?.length);
@@ -47,6 +49,7 @@ console.log("✅ NOTION_PAGE_ID:", process.env.NOTION_PAGE_ID);
 //------------------------------------
 
 const PORT = process.env.PORT;
+const __dirname = path.resolve();
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));

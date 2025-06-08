@@ -4,7 +4,7 @@ import axios from "axios";
 import { generateFingerprint } from "./fingerprint.js";
 
 export const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "/api",
   withCredentials: true,
   timeout: 10000,
   headers: {

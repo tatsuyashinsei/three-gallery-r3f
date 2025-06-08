@@ -1,5 +1,5 @@
 {
-  "name": "fullstack-chat-app-start",
+  "name": "Ichibanboshi_Homepage_Sample",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,5 +12,15 @@
   "license": "ISC",
   "dependencies": {
     "simplex-noise": "^4.0.3"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tatsuyashinsei/three-gallery-r3f.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tatsuyashinsei/three-gallery-r3f/issues"
+  },
+  "homepage": "https://github.com/tatsuyashinsei/three-gallery-r3f#readme"
 }
