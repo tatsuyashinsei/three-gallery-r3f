@@ -8,15 +8,16 @@ import {
 } from "three/examples/jsm/objects/Lensflare";
 
 const LensflareComponent = ({ position = [0, 0, 20] }) => {
+  // publicディレクトリからテクスチャを読み込み
   const textureFlare0 = useLoader(
     THREE.TextureLoader,
-    "/textures/lensflare0.png",
+    "/textures/lensflare0.png", // public/textures/lensflare0.png
   );
   const textureFlare3 = useLoader(
     THREE.TextureLoader,
-    "/textures/lensflare3.png",
+    "/textures/lensflare3.png", // public/textures/lensflare3.png
   );
-  console.log(textureFlare0, textureFlare3);
+  console.log("✅ Textures loaded:", textureFlare0, textureFlare3);
 
   const { light, sunMesh } = useMemo(() => {
     const light = new THREE.PointLight("white", 9, 2000);

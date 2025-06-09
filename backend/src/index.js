@@ -146,77 +146,47 @@ app.use("/api/board", boardRoutes);
 app.use("/api/notion", notionRoutes);
 //------------------------------------
 
+// 本番環境での静的ファイル配信（APIルートの後に配置）
 if (process.env.NODE_ENV === "production") {
-  // Render環境でのファイル構造を詳細に調査
-  console.log("🔍 Current working directory:", process.cwd());
-  console.log("🔍 __dirname:", __dirname);
-  
-  // 可能性のあるパスをすべて確認
+  // 可能性のあるパスを確認
   const possiblePaths = [
+    path.join(process.cwd(), "frontend/dist"),
     path.join(__dirname, "../frontend/dist"),
     path.join(__dirname, "../../frontend/dist"),
-    path.join(__dirname, "../../../frontend/dist"),
-    path.join(process.cwd(), "frontend/dist"),
-    path.join(process.cwd(), "../frontend/dist"),
-    path.join("/opt/render/project/src/frontend/dist"),
-    path.join("/opt/render/project/frontend/dist")
   ];
   
-  console.log("🔍 Checking possible static paths:");
-  possiblePaths.forEach((testPath, index) => {
+  console.log("🔍 Checking static paths:");
+  const validStaticPath = possiblePaths.find(testPath => {
     const exists = fs.existsSync(testPath);
-    console.log(`${index + 1}. ${testPath} - ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
-    
-    if (exists) {
-      // ディレクトリの内容を確認
-      try {
-        const files = fs.readdirSync(testPath);
-        console.log(`   📁 Contents: ${files.join(', ')}`);
-      } catch (err) {
-        console.log(`   ❌ Error reading directory: ${err.message}`);
-      }
-    }
+    console.log(`${testPath} - ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
+    return exists;
   });
-  
-  // 実際に存在するパスを見つける
-  const validStaticPath = possiblePaths.find(testPath => fs.existsSync(testPath));
   
   if (validStaticPath) {
     const indexPath = path.join(validStaticPath, "index.html");
     console.log("✅ Using static path:", validStaticPath);
-    console.log("✅ Index path:", indexPath);
     
     if (fs.existsSync(indexPath)) {
       console.log("✅ Index.html found!");
       
+      // 静的ファイル配信（認証不要）
       app.use(express.static(validStaticPath));
       
+      // SPA fallback（認証不要）
       app.get("*", (req, res) => {
-        console.log(`📄 Serving index.html for: ${req.url}`);
+        // APIルートは除外
+        if (req.path.startsWith('/api/')) {
+          return res.status(404).json({ message: 'API endpoint not found' });
+        }
+        
+        console.log(`📄 Serving SPA for: ${req.path}`);
         res.sendFile(indexPath);
       });
     } else {
-      console.log("❌ Index.html not found in valid static path");
+      console.log("❌ Index.html not found");
     }
   } else {
     console.log("❌ No valid static path found");
-    
-    // フォールバック: 簡単なHTMLレスポンス
-    app.get("*", (req, res) => {
-      res.send(`
-        <html>
-          <body>
-            <h1>Static files not found</h1>
-            <p>Current directory: ${process.cwd()}</p>
-            <p>__dirname: ${__dirname}</p>
-            <p>Checked paths:</p>
-            <ul>
-              ${possiblePaths.map(p => `<li>${p} - ${fs.existsSync(p) ? 'EXISTS' : 'NOT FOUND'}</li>`).join('')}
-            </ul>
-          </body>
-        </html>
-      `);
-    });
   }
 }
     

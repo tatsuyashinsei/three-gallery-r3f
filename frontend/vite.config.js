@@ -40,13 +40,37 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          ui: ['lucide-react', 'react-hot-toast']
+          // React関連
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          
+          // Three.js コア
+          'three-core': ['three'],
+          
+          // Three.js React統合
+          'three-react': ['@react-three/fiber', '@react-three/drei'],
+          
+          // Three.js 重いモジュール（examples/jsm）
+          'three-examples': [
+            'three/examples/jsm/objects/Lensflare',
+            'three/examples/jsm/controls/OrbitControls',
+            'three/examples/jsm/loaders/GLTFLoader',
+            'three/examples/jsm/postprocessing/EffectComposer',
+            'three/examples/jsm/postprocessing/RenderPass',
+            'three/examples/jsm/postprocessing/UnrealBloomPass'
+          ],
+          
+          // Three.js ポストプロセシング
+          'three-postprocessing': ['@react-three/postprocessing'],
+          
+          // UI関連
+          ui: ['lucide-react', 'react-hot-toast', 'framer-motion'],
+          
+          // その他のライブラリ
+          utils: ['axios', 'zustand', 'date-fns']
         }
       }
     },
-    chunkSizeWarningLimit: 1000, // チャンクサイズの警告を1MBに設定
+    chunkSizeWarningLimit: 2000, // チャンクサイズの警告を2MBに設定
   },
   resolve: {
     alias: {
