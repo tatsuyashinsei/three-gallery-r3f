@@ -61,6 +61,40 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use(cookieParser());
 
+// 本番環境での静的ファイル配信（CORSより前に配置）
+if (process.env.NODE_ENV === "production") {
+  // 可能性のあるパスを確認
+  const possiblePaths = [
+    path.join(process.cwd(), "frontend/dist"),
+    path.join(__dirname, "../frontend/dist"),
+    path.join(__dirname, "../../frontend/dist"),
+  ];
+  
+  console.log("🔍 Checking static paths:");
+  const validStaticPath = possiblePaths.find(testPath => {
+    const exists = fs.existsSync(testPath);
+    console.log(`${testPath} - ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
+    return exists;
+  });
+  
+  if (validStaticPath) {
+    const indexPath = path.join(validStaticPath, "index.html");
+    console.log("✅ Using static path:", validStaticPath);
+    
+    if (fs.existsSync(indexPath)) {
+      console.log("✅ Index.html found!");
+      
+      // 静的ファイル配信（CORSチェック不要）
+      app.use(express.static(validStaticPath));
+      console.log("✅ Static file serving configured");
+    } else {
+      console.log("❌ Index.html not found");
+    }
+  } else {
+    console.log("❌ No valid static path found");
+  }
+}
+
 // 開発環境でのみデバッグミドルウェアを追加
 if (process.env.NODE_ENV !== "production") {
   app.use((req, res, next) => {
@@ -71,6 +105,7 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
+// CORS設定（APIルートのみに適用）
 app.use(
     cors({
         origin: function(origin, callback) {
@@ -146,33 +181,21 @@ app.use("/api/board", boardRoutes);
 app.use("/api/notion", notionRoutes);
 //------------------------------------
 
-// 本番環境での静的ファイル配信（APIルートの後に配置）
+// 本番環境でのSPA fallback（CORSの後に配置）
 if (process.env.NODE_ENV === "production") {
-  // 可能性のあるパスを確認
   const possiblePaths = [
     path.join(process.cwd(), "frontend/dist"),
     path.join(__dirname, "../frontend/dist"),
     path.join(__dirname, "../../frontend/dist"),
   ];
   
-  console.log("🔍 Checking static paths:");
-  const validStaticPath = possiblePaths.find(testPath => {
-    const exists = fs.existsSync(testPath);
-    console.log(`${testPath} - ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
-    return exists;
-  });
+  const validStaticPath = possiblePaths.find(testPath => fs.existsSync(testPath));
   
   if (validStaticPath) {
     const indexPath = path.join(validStaticPath, "index.html");
-    console.log("✅ Using static path:", validStaticPath);
     
     if (fs.existsSync(indexPath)) {
-      console.log("✅ Index.html found!");
-      
-      // 静的ファイル配信（認証不要）
-      app.use(express.static(validStaticPath));
-      
-      // SPA fallback（認証不要）
+      // SPA fallback（APIルート以外）
       app.get("*", (req, res) => {
         // APIルートは除外
         if (req.path.startsWith('/api/')) {
@@ -182,11 +205,7 @@ if (process.env.NODE_ENV === "production") {
         console.log(`📄 Serving SPA for: ${req.path}`);
         res.sendFile(indexPath);
       });
-    } else {
-      console.log("❌ Index.html not found");
     }
-  } else {
-    console.log("❌ No valid static path found");
   }
 }
     
